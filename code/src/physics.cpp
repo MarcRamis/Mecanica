@@ -5,6 +5,7 @@
 
 #include "ParticleSystem.h"
 #include "Mesh.h"
+#include "Solver.h"
 
 // Forward declaration
 extern bool renderParticles;
@@ -34,6 +35,7 @@ glm::vec3 capsulePosB = glm::vec3(-4.f, 2.f, 2.f);
 float capsuleRadius = 1.f;
 
 Mesh mesh;
+Solver solver;
 
 bool show_test_window = false;
 void GUI() {
