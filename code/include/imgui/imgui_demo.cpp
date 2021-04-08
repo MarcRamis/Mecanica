@@ -275,7 +275,7 @@ void ImGui::ShowTestWindow(bool* p_open)
 
             static bool check = true;
             ImGui::Checkbox("checkbox", &check);
-
+            
             static int e = 0;
             ImGui::RadioButton("radio a", &e, 0); ImGui::SameLine();
             ImGui::RadioButton("radio b", &e, 1); ImGui::SameLine();
@@ -2047,7 +2047,7 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
 
         static ImGuiTextFilter filter;
         filter.Draw("Filter colors", 200);
-
+        
         static ImGuiColorEditFlags alpha_flags = 0;
         ImGui::RadioButton("Opaque", &alpha_flags, 0); ImGui::SameLine(); 
         ImGui::RadioButton("Alpha", &alpha_flags, ImGuiColorEditFlags_AlphaPreview); ImGui::SameLine(); 

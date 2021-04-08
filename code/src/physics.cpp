@@ -1,76 +1,115 @@
 #include <imgui\imgui.h>
 #include <imgui\imgui_impl_sdl_gl3.h>
 #include <glm\glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-/////////Forward declarations
-namespace LilSpheres {
-	extern const int maxParticles;
-	extern int firstParticleIdx;
-	extern int particleCount;
-	extern void updateParticles(int startIdx, int count, float* array_data);
+#include "ParticleSystem.h"
+#include "Mesh.h"
+
+// Forward declaration
+extern bool renderParticles;
+extern bool renderSphere;
+extern bool renderCapsule;
+extern bool renderCloth;
+
+namespace Sphere {
+	extern void updateSphere(glm::vec3 pos, float radius);
 }
 
-extern bool renderParticles;
+namespace Capsule {
+	extern void updateCapsule(glm::vec3 posA, glm::vec3 posB, float radius);
+}
+
+// ParticleSystem variables
+ParticleSystem ps;
+bool simulationIsActive;
+
+// Sphere gui variablee modifier
+glm::vec3 spherePos = glm::vec3(0.f, 1.f, 0.f);
+float sphereRadius = 1.f;
+
+// Capsule gui variable modifier
+glm::vec3 capsulePosA = glm::vec3(-3.f, 2.f, -2.f);
+glm::vec3 capsulePosB = glm::vec3(-4.f, 2.f, 2.f);
+float capsuleRadius = 1.f;
+
+Mesh mesh;
 
 bool show_test_window = false;
 void GUI() {
 	bool show = true;
 	ImGui::Begin("Physics Parameters", &show, 0);
-
-	{	
+	{
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);//FrameRate
+
+		ImGui::Checkbox("Activate Simulation", &simulationIsActive);
+
+		if (ImGui::CollapsingHeader("Emitter"))
+		{
+			ImGui::SliderFloat("Emission rate", &ps.emisisonRate, 10, 1500);
+			ImGui::SliderFloat("Particle life", &ps.maxAge, 0.033f, 10.f);
+
+			ImGui::RadioButton("Fountain", &ps.type, 0); ImGui::SameLine();
+			ImGui::RadioButton("Cascade", &ps.type, 1);
+
+			if (ps.type == 0)
+			{
+				ImGui::DragFloat3("Fountain Position", glm::value_ptr(ps.f_PosOrigen), 0.01f);
+				ImGui::DragFloat3("Fountain Direction", glm::value_ptr(ps.f_Dir), 0.01f);
+			}
+
+			if (ps.type == 1)
+			{
+				ImGui::DragFloat3("PointA", glm::value_ptr(ps.pointA), 0.01f);
+				ImGui::DragFloat3("PointB", glm::value_ptr(ps.pointB), 0.01f);
+				ImGui::DragFloat3("Cascade Direction", glm::value_ptr(ps.c_Dir), 0.01f);
+			}
+
+			ImGui::SliderFloat("Elasticity", &ps.elastCoef, 0, 1);
+
+		}
+
+		if (ImGui::CollapsingHeader("Sphere"))
+		{
+			ImGui::Checkbox("Use Sphere", &renderSphere);
+			ImGui::DragFloat3("Sphere Position", glm::value_ptr(spherePos), 0.01f);
+			ImGui::DragFloat("Sphere Radius", &sphereRadius, 0.01f);
+		}
+
+		if (ImGui::CollapsingHeader("Capsule"))
+		{
+			ImGui::Checkbox("Use Capsule", &renderCapsule);
+			ImGui::DragFloat3("Capsule Position A", glm::value_ptr(capsulePosA), 0.01f);
+			ImGui::DragFloat3("Capsule Position B", glm::value_ptr(capsulePosB), 0.01f);
+			ImGui::DragFloat("Capsule Radius", &capsuleRadius, 0.01f);
+		}
+
+		if (ImGui::CollapsingHeader("Forces"))
+		{
+			ImGui::Checkbox("Activate Forces", &ps.isForcesActivated);
+			ImGui::DragFloat3("Gravity", glm::value_ptr(ps.gravity), 0.01f);
+		}
 	}
-	
+
 	ImGui::End();
 }
 
-class Particle {
-public:
-	glm::vec3 position;
-
-	Particle() : position(glm::vec3(0.f, 0.f, 0.f)) {};
-	Particle(glm::vec3 _position) : position(_position) {};
-};
-
-class ParticleSystem {
-public:
-	ParticleSystem(int numParticles /*, glm::vec3 *position*/) {};
-	
-	void updateParticle(int idx, glm::vec3 newPosition) {
-
-	}
-
-	void updateLilSpheres() 
-	{
-	}
-private:
-};
-
-Particle p1;
-
 void PhysicsInit() {
-	renderParticles = true;
-	p1 = Particle(glm::vec3(4.f, 3.f, 2.f));
 
-	LilSpheres::firstParticleIdx = 0;
-	LilSpheres::particleCount = 1;
+	// Prims
+	renderParticles = true;
+	renderCloth = true;
+	renderSphere = false;
+	renderCapsule = false;
+	
+	mesh = Mesh(ClothMesh::numCols, ClothMesh::numRows);
+	LilSpheres::particleCount = mesh.width * mesh.height;
 }
 
 void PhysicsUpdate(float dt) {
-	int start_particle = 0;
-	int number_of_particles = 1;
-	float* particles_position_vector = &(p1.position.x);
 
-	//p1.position = glm::vec3(float(rand() / 5.f), float(rand() / 10.f), float(rand() / 5.f));
-	//p1.position.x = static_cast<float>(rand() / static_cast <float> (5.f));
-	//p1.position.y = static_cast<float>(rand() / static_cast <float> (10.f));
-	//p1.position.z = static_cast<float>(rand() / static_cast < float> (5.f));
-
-	//p1.position.x = -5 + p_pars.min + (float)rand() / (RAND_MAX / (p_pars.max - p_pars.min));
-	//p1.position.x = p_pars.min + (float)rand() / (RAND_MAX / (p_pars.max - p_pars.min));
-	//p1.position.x = -5 + p_pars.min + (float)rand() / (RAND_MAX / (p_pars.max - p_pars.min));
-
-	LilSpheres::updateParticles(start_particle, number_of_particles, particles_position_vector);
+	ClothMesh::updateClothMesh(&(mesh.pos[0].x));
+	LilSpheres::updateParticles(0, mesh.width * mesh.height, &(mesh.pos[0].x));
 }
 
 void PhysicsCleanup() {
