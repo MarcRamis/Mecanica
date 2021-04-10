@@ -10,19 +10,21 @@ namespace ClothMesh {
 class Mesh : public ParticleSystem
 {
 private:
-	int get_index(int row, int col) {
-		return row * width + col;	// HACEMOS ESTO PARA PASAR DE FILA COLUMNA DE LA MESH A LA PARTÍCULA QUE LE TOCA
-	}
+	int get_index(int row, int col);
 
+
+	
 public:
+	float kElasticity;
+	float kDamping;
+	float length;
+
 	int width;
 	int height;
 
 	Mesh();
 	Mesh(int w, int h);
 
-	glm::vec3* get_spring_forces()
-	{
-		return nullptr;
-	}
+	glm::vec3 spring_force(float, float, float, glm::vec3, glm::vec3, glm::vec3, glm::vec3);
+	glm::vec3* get_spring_forces();
 };

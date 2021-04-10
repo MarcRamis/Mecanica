@@ -10,6 +10,7 @@ namespace LilSpheres {
 
 ParticleSystem::ParticleSystem(int _numParticles) : maxParticles(_numParticles), currentParticles(0) {
 	pos = new glm::vec3[_numParticles];
+	prevPos = new glm::vec3[_numParticles];
 	vel = new glm::vec3[_numParticles];
 	
 	

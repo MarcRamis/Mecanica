@@ -35,7 +35,7 @@ glm::vec3 capsulePosB = glm::vec3(-4.f, 2.f, 2.f);
 float capsuleRadius = 1.f;
 
 Mesh mesh;
-Solver solver;
+Verlet solver;
 
 bool show_test_window = false;
 void GUI() {
@@ -97,18 +97,26 @@ void GUI() {
 }
 
 void PhysicsInit() {
-
-	// Prims
-	renderParticles = true;
-	renderCloth = true;
-	renderSphere = false;
-	renderCapsule = false;
 	
-	mesh = Mesh(ClothMesh::numCols, ClothMesh::numRows);
+	//solver = Euler();
+	solver = Verlet();
+
+	mesh = Mesh(1, 2);
+	//renderSphere = false;
+	//renderCapsule = false;
+	
+	renderParticles = true;
+	//renderCloth = true;
 	LilSpheres::particleCount = mesh.width * mesh.height;
+	ps = ParticleSystem(LilSpheres::particleCount);
 }
 
 void PhysicsUpdate(float dt) {
+
+	glm::vec3* forces = mesh.get_spring_forces();
+	// SUMAR GRAVEDAD
+	
+	solver.UpdateParticles(ps, forces, dt);
 
 	ClothMesh::updateClothMesh(&(mesh.pos[0].x));
 	LilSpheres::updateParticles(0, mesh.width * mesh.height, &(mesh.pos[0].x));
