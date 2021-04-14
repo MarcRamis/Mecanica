@@ -146,11 +146,13 @@ xcopy $(ProjectDir)libs\SDL2.dll $(OutDir) /y /d</Command>
     <ClCompile Include="src\render.cpp" />
     <ClCompile Include="src\render_prims.cpp" />
     <ClCompile Include="src\Solver.cpp" />
+    <ClCompile Include="src\Spring.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\ParticleSystem.h" />
     <ClInclude Include="src\Solver.h" />
+    <ClInclude Include="src\Spring.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -37,6 +37,9 @@ float capsuleRadius = 1.f;
 Mesh mesh;
 Verlet solver;
 
+glm::vec3* forces;
+glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
+
 bool show_test_window = false;
 void GUI() {
 	bool show = true;
@@ -45,31 +48,6 @@ void GUI() {
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);//FrameRate
 
 		ImGui::Checkbox("Activate Simulation", &simulationIsActive);
-
-		if (ImGui::CollapsingHeader("Emitter"))
-		{
-			ImGui::SliderFloat("Emission rate", &ps.emisisonRate, 10, 1500);
-			ImGui::SliderFloat("Particle life", &ps.maxAge, 0.033f, 10.f);
-
-			ImGui::RadioButton("Fountain", &ps.type, 0); ImGui::SameLine();
-			ImGui::RadioButton("Cascade", &ps.type, 1);
-
-			if (ps.type == 0)
-			{
-				ImGui::DragFloat3("Fountain Position", glm::value_ptr(ps.f_PosOrigen), 0.01f);
-				ImGui::DragFloat3("Fountain Direction", glm::value_ptr(ps.f_Dir), 0.01f);
-			}
-
-			if (ps.type == 1)
-			{
-				ImGui::DragFloat3("PointA", glm::value_ptr(ps.pointA), 0.01f);
-				ImGui::DragFloat3("PointB", glm::value_ptr(ps.pointB), 0.01f);
-				ImGui::DragFloat3("Cascade Direction", glm::value_ptr(ps.c_Dir), 0.01f);
-			}
-
-			ImGui::SliderFloat("Elasticity", &ps.elastCoef, 0, 1);
-
-		}
 
 		if (ImGui::CollapsingHeader("Sphere"))
 		{
@@ -89,7 +67,7 @@ void GUI() {
 		if (ImGui::CollapsingHeader("Forces"))
 		{
 			ImGui::Checkbox("Activate Forces", &ps.isForcesActivated);
-			ImGui::DragFloat3("Gravity", glm::value_ptr(ps.gravity), 0.01f);
+			ImGui::DragFloat3("Gravity", glm::value_ptr(gravity), 0.01f);
 		}
 	}
 
@@ -109,14 +87,18 @@ void PhysicsInit() {
 	//renderCloth = true;
 	LilSpheres::particleCount = mesh.width * mesh.height;
 	ps = ParticleSystem(LilSpheres::particleCount);
+	
+	forces = new glm::vec3[mesh.maxParticles];
 }
 
 void PhysicsUpdate(float dt) {
-
-	glm::vec3* forces = mesh.get_spring_forces();
-	// SUMAR GRAVEDAD
 	
-	solver.UpdateParticles(ps, forces, dt);
+	forces[0] = mesh.spring_force(mesh.kElasticity, mesh.kDamping, 3.f, mesh.pos[0], mesh.pos[1], mesh.prevPos[0], mesh.prevPos[1]);
+	forces[1] = -forces[0];
+	// SUMAR GRAVEDAD 
+	std::cout << "F1: " << glm::to_string(forces[0]) << std::endl << std::endl;
+	
+	solver.UpdateParticles(mesh, forces, dt);
 
 	ClothMesh::updateClothMesh(&(mesh.pos[0].x));
 	LilSpheres::updateParticles(0, mesh.width * mesh.height, &(mesh.pos[0].x));

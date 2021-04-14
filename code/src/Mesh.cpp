@@ -1,15 +1,11 @@
 #include "Mesh.h"
 
-Mesh::Mesh() 
-{
-	kElasticity = 1.0f;
-	kDamping = 0.0f;;
-}
+Mesh::Mesh(){}
 
 Mesh::Mesh(int w, int h) : width(w), height(h), ParticleSystem(w* h)
 {
-	kElasticity = 1.0f;
-	kDamping = 0.0f;;
+	kElasticity = 40.f;
+	kDamping = 0.f;
 
 	float z = 0.0f;
 	
@@ -17,7 +13,7 @@ Mesh::Mesh(int w, int h) : width(w), height(h), ParticleSystem(w* h)
 	{
 		for (int col = 0; col < w; col++)
 		{
-			pos[get_index(row, col)] = glm::vec3(row, 5.0f, col);
+			pos[get_index(row, col)] = glm::vec3(row * 5.f, 5.0f, col);
 		}
 	}
 }
@@ -32,12 +28,20 @@ glm::vec3 Mesh::spring_force(float k_Elasticity,
 	glm::vec3 p1, glm::vec3 p2,
 	glm::vec3 v1, glm::vec3 v2)
 {
-	// NO DAMPING
-	// F = -k_Elasticity * (p1 - p2)
+	
+	//std::cout << "Elasticity: " << k_Elasticity << std::endl;
+	//std::cout << "Damping: " << k_Damping << std::endl;
+	//std::cout << "Length: " << rest_Distance << std::endl;
+	
+	std::cout << "P1: " << glm::to_string(p1) << std::endl;
+	std::cout << "P2: " << glm::to_string(p2) << std::endl;
+	
+	std::cout << "V1: " << glm::to_string(v1) << std::endl;
+	std::cout << "V2: " << glm::to_string(v2) << std::endl;
 
 	glm::vec3 pF = p1 - p2;
 	
-	return -k_Elasticity * (glm::length(pF) - rest_Distance) * (p1 - p2 / glm::length(pF));
+	return -(k_Elasticity * (glm::length(pF) - rest_Distance) + k_Damping * (glm::dot((v1 - v2), glm::normalize(pF)) )) * glm::normalize(pF);	
 }
 
 glm::vec3* Mesh::get_spring_forces()
