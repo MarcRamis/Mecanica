@@ -36,6 +36,7 @@ float capsuleRadius = 1.f;
 
 Mesh mesh;
 Verlet solver;
+//Euler solver;
 
 glm::vec3* forces;
 glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
@@ -78,7 +79,7 @@ void PhysicsInit() {
 	
 	//solver = Euler();
 	solver = Verlet();
-
+	
 	mesh = Mesh(1, 2);
 	//renderSphere = false;
 	//renderCapsule = false;
@@ -92,7 +93,6 @@ void PhysicsInit() {
 }
 
 void PhysicsUpdate(float dt) {
-	
 	forces[0] = mesh.spring_force(mesh.kElasticity, mesh.kDamping, 3.f, mesh.pos[0], mesh.pos[1], mesh.prevPos[0], mesh.prevPos[1]);
 	forces[1] = -forces[0];
 	// SUMAR GRAVEDAD 

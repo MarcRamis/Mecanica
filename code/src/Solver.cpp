@@ -10,16 +10,17 @@ void Euler::UpdateParticles(ParticleSystem ps, glm::vec3* forces, float dt)
 	for (int i = 0; i < ps.maxParticles; i++)
 	{
 		ps.pos[i] += ps.vel[i] * dt;
-		ps.vel[i] += ps.acc[i] * dt;
+		ps.vel[i] += (forces[i] / ps.mass) * dt;
 	}
 }
 
 void Verlet::UpdateParticles(ParticleSystem ps, glm::vec3* forces, float dt)
 {
+	glm::vec3 tmp;
 	for (int i = 0; i < ps.maxParticles; i++)
-	{		
-		ps.prevPos[i] = ps.pos[i];
-	
-		ps.pos[i] += (ps.pos[i] - ps.prevPos[i]) + forces[i] * glm::pow(dt, 2.0f);
+	{
+		tmp = ps.pos[i];
+		ps.pos[i] += (ps.pos[i] - ps.prevPos[i]) + (forces[i] / ps.mass) * glm::pow(dt, 2.0f);
+		ps.prevPos[i] = tmp;
 	}
 }

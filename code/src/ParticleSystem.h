@@ -21,7 +21,6 @@ public:
 	glm::vec3* pos;
 	glm::vec3* prevPos;
 	glm::vec3* vel;
-	glm::vec3* acc;
 	float mass;
 	
 	int maxParticles;	// TotalParticles
