@@ -4,6 +4,7 @@
 
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
+#include <vector>
 
 namespace LilSpheres {
 	extern const int maxParticles;

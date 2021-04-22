@@ -4,16 +4,17 @@ Mesh::Mesh(){}
 
 Mesh::Mesh(int w, int h) : width(w), height(h), ParticleSystem(w* h)
 {
-	kElasticity = 500.f;
-	kDamping = 0.f;
-
-	float z = 0.0f;
+	kElasticity = 30.f;
+	kDamping = 1.f;
 	
 	for (int row = 0; row < h; row++)
 	{
 		for (int col = 0; col < w; col++)
 		{
-			pos[get_index(row, col)] = glm::vec3(row * 5.f, 5.0f, col);
+			pos[get_index(row, col)] = glm::vec3(row, col, 0.0f);
+			prevPos[get_index(row, col)] = glm::vec3(row, col, 0.0f);
+			//pos[get_index(row, col)] = glm::vec3(row, 5.f, col);
+			//prevPos[get_index(row, col)] = glm::vec3(row, 5.f, col);
 		}
 	}
 }
@@ -27,8 +28,7 @@ glm::vec3 Mesh::spring_force(float k_Elasticity,
 	float rest_Distance, 
 	glm::vec3 p1, glm::vec3 p2,
 	glm::vec3 v1, glm::vec3 v2)
-{
-	
+{	
 	//std::cout << "Elasticity: " << k_Elasticity << std::endl;
 	//std::cout << "Damping: " << k_Damping << std::endl;
 	//std::cout << "Length: " << rest_Distance << std::endl;
@@ -41,8 +41,9 @@ glm::vec3 Mesh::spring_force(float k_Elasticity,
 	
 	glm::vec3 pF = p1 - p2;
 	glm::vec3 vF = v1 - v2;
+	glm::vec3 u = glm::normalize(pF);
 	
-	return -(k_Elasticity * (glm::length(pF) - rest_Distance) + k_Damping * (glm::dot((vF), glm::normalize(pF)) )) * glm::normalize(pF);
+	return -(k_Elasticity * (glm::length(pF) - rest_Distance) + k_Damping * (glm::dot((vF), u) )) * u;
 }
 
 glm::vec3* Mesh::get_spring_forces()
