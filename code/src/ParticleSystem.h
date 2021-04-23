@@ -22,11 +22,12 @@ public:
 	glm::vec3* pos;
 	glm::vec3* prevPos;
 	glm::vec3* vel;
+	glm::vec3* forces;
 	float mass;
-	
+
 	int maxParticles;	// TotalParticles
 
-	// -- Forces
+	//Forces
 	bool isForcesActivated;
 
 	ParticleSystem(int numParticles = 100);
