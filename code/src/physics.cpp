@@ -84,10 +84,12 @@ void PhysicsUpdate(float dt) {
 
 	if (simulationIsActive)
 	{
-		for (int i = 0; i < mesh.maxParticles; i++)
-		{
-			forces[i] = mesh.spring_force(mesh.kElasticity, mesh.kDamping, 2.f, mesh.pos[i], mesh.pos[i + 1], mesh.vel[i + 1], mesh.vel[i + 1]);;
-		}
+
+
+		//for (int i = 0; i < mesh.maxParticles; i++)
+		//{
+		//	forces[i] = mesh.spring_force(mesh.kElasticity, mesh.kDamping, 2.f, mesh.pos[i], mesh.pos[i + 1], mesh.vel[i + 1], mesh.vel[i + 1]);;
+		//}
 		//forces[0] = mesh.spring_force(mesh.kElasticity, mesh.kDamping, 2.f, mesh.pos[0], mesh.pos[1], mesh.vel[0], mesh.vel[1]);
 		//forces[1] = -forces[0];
 		// SUMAR GRAVEDAD 

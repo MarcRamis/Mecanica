@@ -55,3 +55,69 @@ glm::vec3* Mesh::get_spring_forces()
 
 	return nullptr;
 }
+
+void Mesh::SpringStructures()
+{
+#pragma region Structural Strings
+	// LEFT-RIGHT
+	for (int row = 0; row < height; row++)
+	{
+		for (int col = 0; col < width - 1; col++)
+		{
+			spr.push_back(Spring(kElasticity, kDamping, 2.f, get_index(row, col), get_index(row, col) + 1));
+		}
+	}
+	// DOWN- UP
+	for (int col = 0; col < width; col++)
+	{
+		for (int row = 0; row < height - 1; row++)
+		{
+			spr.push_back(Spring(kElasticity, kDamping, 2.f, get_index(row, col), get_index(row, col) + 1));
+		}
+
+	}
+#pragma endregion
+
+#pragma Shear
+	// DIAGONAL
+	for (int row = 0; row < height; row++)
+	{
+		for (int col = 0; col < width - 1; col++)
+		{
+			spr.push_back(Spring(kElasticity, kDamping, 2.f, get_index(row, col), get_index(row, col) + width + 1));
+		}
+	}
+#pragma endregion
+
+#pragma Bending
+	// LEFT-RIGHT
+	for (int row = 0; row < height; row++)
+	{
+		for (int col = 0; col < width - 1; col++)
+		{
+			spr.push_back(Spring(kElasticity, kDamping, 2.f, get_index(row, col), get_index(row, col) + 2));
+		}
+	}
+	// DOWN - UP
+	for (int col = 0; col < width; col++)
+	{
+		for (int row = 0; row < height - 1; row++)
+		{
+			spr.push_back(Spring(kElasticity, kDamping, 2.f, get_index(row, col), get_index(row, col) + 2));
+		}
+	}
+#pragma endregion
+}
+
+glm::vec3 Spring::spring_force(float k_Elasticity,
+	float k_Damping,
+	float rest_Distance,
+	glm::vec3 p1, glm::vec3 p2,
+	glm::vec3 v1, glm::vec3 v2)
+{
+	glm::vec3 pF = p1 - p2;
+	glm::vec3 vF = v1 - v2;
+	glm::vec3 u = glm::normalize(pF);
+
+	return -(k_Elasticity * (glm::length(pF) - rest_Distance) + k_Damping * (glm::dot((vF), u))) * u;
+}
