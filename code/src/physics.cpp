@@ -7,6 +7,8 @@
 #include "Mesh.h"
 #include "Solver.h"
 
+#include <ctime>
+
 // Forward declaration
 extern bool renderParticles;
 extern bool renderSphere;
@@ -31,12 +33,18 @@ float sphereRadius = 1.f;
 glm::vec3* forces;
 glm::vec3 *gravity;
 
-// Spring parameters for GUI
-float k_stretch_parameters[2] = {30.f, 1.f};
-float k_shear_parameters[2] = { 30.f, 1.f };
-float k_bend_parameters[2] = { 30.f, 1.f };
-
+// Spring parameters for GUI	--> NO BEING USED YET
+float k_stretch_parameters[] = {30.f, 1.f};
+float k_shear_parameters[] = { 60.f, 1.f };
+float k_bend_parameters[] = { 90.f, 1.f };
 float linkDistance = 0.2f;
+
+// Times
+clock_t start, diff;
+float elapsedsec = 0.0f;
+float sec = 10.f;
+bool once = false;
+
 
 bool show_test_window = false;
 void GUI() {
@@ -49,6 +57,8 @@ void GUI() {
 		ImGui::Checkbox("Use Cloth", &renderCloth);
 		ImGui::Checkbox("Activate Simulation", &simulationIsActive);
 
+		ImGui::DragFloat("Timer", &sec, 0.01f);
+
 		if (ImGui::CollapsingHeader("Collisions"))
 		{
 			ImGui::Checkbox("Use Sphere", &renderSphere);
@@ -58,7 +68,7 @@ void GUI() {
 
 		if (ImGui::CollapsingHeader("Forces"))
 		{
-			ImGui::Checkbox("Activate Forces", &ps.isForcesActivated);
+			ImGui::Checkbox("Activate Forces", &mesh.isForcesActivated);
 			ImGui::DragFloat3("Gravity", glm::value_ptr(*gravity), 0.01f);
 		}
 		
@@ -77,7 +87,10 @@ void GUI() {
 
 void ResetCloth()
 {
-
+	//mesh.Reset();
+	
+	mesh = Mesh(ClothMesh::numCols, ClothMesh::numRows, linkDistance);
+	mesh.CreateSprings(linkDistance, k_stretch_parameters, k_shear_parameters, k_bend_parameters);
 }
 
 void PhysicsInit() {
@@ -92,8 +105,7 @@ void PhysicsInit() {
 	
 	// Init Mesh & Springs
 	mesh = Mesh(ClothMesh::numCols, ClothMesh::numRows, linkDistance);
-	//mesh = Mesh(2,1, linkDistance);
-	mesh.CreateSprings();
+	mesh.CreateSprings(linkDistance, k_stretch_parameters, k_shear_parameters, k_bend_parameters);
 	
 	// Init Particles
 	LilSpheres::particleCount = mesh.width * mesh.height;
@@ -109,11 +121,38 @@ void PhysicsInit() {
 }
 
 void PhysicsUpdate(float dt) {
-	
+		
 	if (simulationIsActive)
 	{	
-		solver.UpdateParticles(mesh, mesh.get_spring_forces(), dt);
+		if (!once)
+		{
+			// Init time
+			start = clock();
+			once = true;
+		}
+		// Timer
+		diff = clock() - start;
+		elapsedsec = diff / CLOCKS_PER_SEC;
+		if (elapsedsec >= sec)
+		{
+			ResetCloth();
+			elapsedsec = 0.0f;
+			start = clock();
+		}
+
+		forces = mesh.get_spring_forces();
+		//
+		//if (mesh.isForcesActivated)
+		//{
+		//	for (int i = 0; i < mesh.maxParticles; i++)
+		//	{
+		//		forces[i] += gravity[i];
+		//	}
+		//}
+
+		solver.UpdateParticles(mesh, forces, dt);
 	}
+
 	ClothMesh::updateClothMesh(&(mesh.pos[0].x));
 	LilSpheres::updateParticles(0, mesh.width * mesh.height, &(mesh.pos[0].x));
 	Sphere::updateSphere(spherePos, sphereRadius);

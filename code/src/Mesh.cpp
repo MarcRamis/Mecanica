@@ -4,9 +4,6 @@ Mesh::Mesh(){}
 
 Mesh::Mesh(int w, int h, float linkDistance) : width(w), height(h), ParticleSystem(w* h)
 {
-	kElasticity = 30.f;
-	kDamping = 1.f;
-	
 	for (int row = 0; row < h; row++)
 	{
 		for (int col = 0; col < w; col++)
@@ -14,6 +11,16 @@ Mesh::Mesh(int w, int h, float linkDistance) : width(w), height(h), ParticleSyst
 			pos[get_index(row, col)] = glm::vec3(col * linkDistance, 3.f, row * linkDistance);
 			prevPos[get_index(row, col)] = glm::vec3(col * linkDistance, 3.f, row * linkDistance);
 		}
+	}
+
+	for (int row = 0; row < h; row++)
+	{
+		std::cout << row * w;
+		for (int col = 0; col < w - 1; col++)
+		{
+			std::cout << '\t'<< row * w + col + 1;
+		}
+		std::cout << std::endl;
 	}
 }
 
@@ -23,97 +30,93 @@ int Mesh::get_index(int row, int col) {
 
 glm::vec3* Mesh::get_spring_forces()
 {
-	//glm::vec3* positiveSpringForces = new glm::vec3[springs.size()];
-	//glm::vec3* negateSpringForces = new glm::vec3[springs.size()];
-
-	//// Init to 0
-	//for (int i = 0; i < springs.size(); i++)
-	//{
-	//	positiveSpringForces[i] = glm::vec3(0.f);
-	//	negateSpringForces[i] = glm::vec3(0.f);
-	//}
-
-	//for (int i = 0; i < springs.size(); i++)
-	//{
-	//	positiveSpringForces[i] = springs[i].get_p1_force(pos, pos, vel, vel);
-	//	negateSpringForces[i] = springs[i].get_p2_force(pos, pos, vel, vel);
-	//}
-
-	//for (int i = 0; i < maxParticles; i++)
-	//{
-	//	for (int j = 0; j < springs.size(); j++)
-	//	{
-	//		// POR CADA PARTÍCULA. [MAX PARTICLES = 272 MAS O MENOS]
-	//		// POR CADA MUELLE EN EL QUE SU ÍNDICE SEA IGUAL AL NÚMERO DE LA PARTÍCULA. [400 Y ALGO] 
-	//		if (i == springs[i].GetP1Index())
-	//		{
-	//			forces[i] += positiveSpringForces[j];
-	//			//forces[i + 1] += negateSpringForces[j];
-	//		}
-	//	}
-	//}
+	for (int i = 0; i < maxParticles; i++)
+	{
+		forces[i] = glm::vec3(0.f, 0.f, 0.f);
+	}
 
 	for (int i = 0; i < maxParticles; i++)
 	{
-		forces[i] += springs[i].get_p2_force(pos, pos, vel, vel);
-		forces[i + 1] += springs[i].get_p2_force(pos, pos, vel, vel);
+		for (int j = 0; j < springs.size(); j++)
+		{
+			if (i == springs[j].p1_idx)
+			{
+				forces[i] += springs[j].get_p1_force(pos, pos, vel, vel);	
+			}
+			else if (i == springs[j].p2_idx)
+			{
+				forces[i] += springs[j].get_p2_force(pos, pos, vel, vel);
+			}
+		}
 	}
 
 	return forces;
 }
 
-void Mesh::CreateSprings()
+void Mesh::CreateSprings(float linkDistance, float kForces_stretch[], float kForces_shear[], float kForces_bending[])
 {
+	
+
 #pragma region Structural Strings
+	
 	// LEFT - RIGHT
 	for (int row = 0; row < height; row++)
 	{
 		for (int col = 0; col < width - 1; col++)
 		{
-			springs.push_back(Spring(kElasticity, kDamping, 2.f, get_index(row, col), get_index(row, col) + 1));
-		}
-	}
-	int x = 0;
-	// DOWN - UP
-	for (int col = 0; col < width; col++)
-	{
-		for (int row = 0; row < height - 1; row++)
-		{
-			springs.push_back(Spring(kElasticity, kDamping, 2.f, get_index(row, col), get_index(row, col) + 1));
+			springs.push_back(Spring(kForces_stretch[0], kForces_stretch[1], linkDistance, get_index(row, col), get_index(row, col + 1)));
 		}
 	}
 
-	x = 0;
+	// DOWN - UP
+	for (int row = 0; row < height - 1; row++)
+	{
+		for (int col = 0; col < width; col++)
+		{
+			springs.push_back(Spring(kForces_stretch[0], kForces_stretch[1], linkDistance, get_index(row, col), get_index(row + 1, col)));
+		}
+	}
+	
 #pragma endregion
 
 #pragma region Shear
-	// DIAGONAL
+	// DIAGONAL DERECHA
 	//for (int row = 0; row < height; row++)
 	//{
 	//	for (int col = 0; col < width - 1; col++)
 	//	{
-	//		springs.push_back(Spring(kElasticity, kDamping, 2.f, get_index(row, col), get_index(row, col) + width + 1));
+	//		springs.push_back(Spring(kForces_shear[0], kForces_shear[1],
+	//			glm::sqrt(glm::pow(linkDistance,2) + glm::pow(linkDistance, 2)), get_index(row, col), get_index(row, col + width + 1)));
+	//	}
+	//}
+	//
+	//for (int col = width - 1; col > 1; col--)
+	//{
+	//	for(int row = 0; row < height - 1; row++)
+	//	{
+	//		springs.push_back(Spring(kForces_shear[0], kForces_shear[1],
+	//			glm::sqrt(glm::pow(linkDistance, 2) + glm::pow(linkDistance, 2)), get_index(row, col), get_index(row, col * width - 1)));
 	//	}
 	//}
 
 #pragma endregion
 
 #pragma region Bending
-
+	
 	//// LEFT-RIGHT
 	//for (int row = 0; row < height; row++)
 	//{
-	//	for (int col = 0; col < width - 1; col++)
+	//	for (int col = 0; col < width - 2; col++)
 	//	{
-	//		springs.push_back(Spring(kElasticity, kDamping, 2.f, get_index(row, col), get_index(row, col) + 2));
+	//		springs.push_back(Spring(kForces_bending[0], kForces_bending[1], linkDistance * 2.f, get_index(row, col), get_index(row, col + 2)));
 	//	}
 	//}
 	//// DOWN - UP
-	//for (int col = 0; col < width; col++)
+	//for (int row = 0; row < height - 2; row++)
 	//{
-	//	for (int row = 0; row < height - 1; row++)
+	//	for (int col = 0; col < width; col++)
 	//	{
-	//		springs.push_back(Spring(kElasticity, kDamping, 2.f, get_index(row, col), get_index(row, col) + 2));
+	//		springs.push_back(Spring(kForces_bending[0], kForces_bending[1], linkDistance * 2.f, get_index(row, col), get_index(row + 2, col)));
 	//	}
 	//}
 

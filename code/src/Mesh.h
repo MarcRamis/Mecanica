@@ -18,10 +18,6 @@ private:
 	int get_index(int row, int col);
 
 public:
-	
-	float kElasticity;
-	float kDamping;
-	float length;
 
 	int width;
 	int height;
@@ -29,7 +25,7 @@ public:
 	Mesh();
 	Mesh(int w, int h, float linkDistance);
 
-	void CreateSprings();
+	void CreateSprings(float linkDistance, float kForces_stretch[], float kForces_shear[], float kForces_bending[]);
 	glm::vec3* get_spring_forces();
 };
 
@@ -39,9 +35,10 @@ private:
 	float kElasticity;
 	float kDamping;
 	float initial_length;
-	int p1_idx, p2_idx;
 
 public:
+	
+	int p1_idx, p2_idx;
 
 	Spring();
 	Spring(float k_e, float k_d, float L, int _p1_idx, int _p2_idx)
@@ -49,6 +46,7 @@ public:
 
 	glm::vec3 get_p1_force(glm::vec3 *p1, glm::vec3 *p2, glm::vec3 *v1, glm::vec3 *v2);
 	glm::vec3 get_p2_force(glm::vec3 *p1, glm::vec3 *p2, glm::vec3 *v1, glm::vec3 *v2);
-
+	
 	int GetP1Index() { return p1_idx; };
+	int GetP2Index() { return p2_idx; };
 };
