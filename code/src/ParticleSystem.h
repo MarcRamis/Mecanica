@@ -27,9 +27,6 @@ public:
 
 	int maxParticles;	// TotalParticles
 
-	//Forces
-	bool isForcesActivated;
-
 	ParticleSystem(int numParticles = 100);
 
 	int GetMaxParticles() { return maxParticles; }

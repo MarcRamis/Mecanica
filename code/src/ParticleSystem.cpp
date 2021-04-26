@@ -15,6 +15,4 @@ ParticleSystem::ParticleSystem(int _numParticles) : maxParticles(_numParticles) 
 	forces = new glm::vec3[_numParticles];	
 	
 	mass = 1.0f;
-	
-	isForcesActivated = true;
 }

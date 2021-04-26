@@ -27,6 +27,7 @@ public:
 
 	void CreateSprings(float linkDistance, float kForces_stretch[], float kForces_shear[], float kForces_bending[]);
 	glm::vec3* get_spring_forces();
+	void Reset();
 };
 
 class Spring

@@ -32,9 +32,11 @@ float sphereRadius = 1.f;
 // Forces
 glm::vec3* forces;
 glm::vec3 *gravity;
+glm::vec3 gravityValues = glm::vec3(0.0f, -9.81f, 0.0f);
+bool isForcesActivated = false;
 
 // Spring parameters for GUI	--> NO BEING USED YET
-float k_stretch_parameters[] = {30.f, 1.f};
+float k_stretch_parameters[] = { 30.f, 1.f};
 float k_shear_parameters[] = { 60.f, 1.f };
 float k_bend_parameters[] = { 90.f, 1.f };
 float linkDistance = 0.2f;
@@ -44,7 +46,6 @@ clock_t start, diff;
 float elapsedsec = 0.0f;
 float sec = 10.f;
 bool once = false;
-
 
 bool show_test_window = false;
 void GUI() {
@@ -68,8 +69,8 @@ void GUI() {
 
 		if (ImGui::CollapsingHeader("Forces"))
 		{
-			ImGui::Checkbox("Activate Forces", &mesh.isForcesActivated);
-			ImGui::DragFloat3("Gravity", glm::value_ptr(*gravity), 0.01f);
+			ImGui::Checkbox("Activate Forces", &isForcesActivated);
+			ImGui::DragFloat3("Gravity", glm::value_ptr(gravityValues), 0.01f);
 		}
 		
 		if (ImGui::CollapsingHeader("Springs"))
@@ -87,10 +88,21 @@ void GUI() {
 
 void ResetCloth()
 {
-	//mesh.Reset();
+	mesh.Reset();
 	
 	mesh = Mesh(ClothMesh::numCols, ClothMesh::numRows, linkDistance);
 	mesh.CreateSprings(linkDistance, k_stretch_parameters, k_shear_parameters, k_bend_parameters);
+	
+	// Init Forces
+	delete[] forces;
+	delete[] gravity;
+
+	forces = new glm::vec3[mesh.maxParticles];
+	gravity = new glm::vec3[mesh.maxParticles];
+	for (int i = 0; i < mesh.maxParticles; i++)
+	{
+		gravity[i] = glm::vec3(gravityValues);
+	}
 }
 
 void PhysicsInit() {
@@ -105,6 +117,18 @@ void PhysicsInit() {
 	
 	// Init Mesh & Springs
 	mesh = Mesh(ClothMesh::numCols, ClothMesh::numRows, linkDistance);
+	isForcesActivated = false;
+	// PRINT PARTICLES IN 2D FORMAT
+	for (int row = 0; row < mesh.height; row++)
+	{
+		std::cout << row * mesh.width;
+		for (int col = 0; col < mesh.width - 1; col++)
+		{
+			std::cout << '\t' << row * mesh.width + col + 1;
+		}
+		std::cout << std::endl;
+	}
+
 	mesh.CreateSprings(linkDistance, k_stretch_parameters, k_shear_parameters, k_bend_parameters);
 	
 	// Init Particles
@@ -116,7 +140,7 @@ void PhysicsInit() {
 	gravity = new glm::vec3[mesh.maxParticles];
 	for (int i = 0; i < mesh.maxParticles; i++)
 	{
-		gravity[i] = glm::vec3(0.0f, -9.81f, 0.0f);
+		gravity[i] = glm::vec3(gravityValues);
 	}
 }
 
@@ -139,16 +163,16 @@ void PhysicsUpdate(float dt) {
 			elapsedsec = 0.0f;
 			start = clock();
 		}
-
+		
 		forces = mesh.get_spring_forces();
-		//
-		//if (mesh.isForcesActivated)
-		//{
-		//	for (int i = 0; i < mesh.maxParticles; i++)
-		//	{
-		//		forces[i] += gravity[i];
-		//	}
-		//}
+		
+		if (isForcesActivated)
+		{
+			for (int i = 0; i < mesh.maxParticles; i++)
+			{
+				forces[i] += gravity[i];
+			}
+		}
 
 		solver.UpdateParticles(mesh, forces, dt);
 	}

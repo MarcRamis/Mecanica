@@ -27,6 +27,5 @@ void Verlet::UpdateParticles(ParticleSystem ps, glm::vec3* forces, float dt)
 
 			ps.vel[i] += (ps.pos[i] - ps.prevPos[i]) / dt;
 		}
-
 	}
 }
