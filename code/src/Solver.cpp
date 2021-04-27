@@ -14,18 +14,23 @@ void Euler::UpdateParticles(ParticleSystem ps, glm::vec3* forces, float dt)
 	}
 }
 
-void Verlet::UpdateParticles(ParticleSystem ps, glm::vec3* forces, float dt)
+void Verlet::UpdateParticles(ParticleSystem ps, glm::vec3* forces, float dt, SphereCollider sphere)
 {
 	for (int i = 0; i < ps.maxParticles; i++)
 	{
 		if ( i == 0 || i == 13) {}
 		else
 		{
-			glm::vec3 tmp = ps.pos[i];
-			ps.pos[i] += (ps.pos[i] - ps.prevPos[i]) + (forces[i] / ps.mass) * powf(dt, 2.0f);
-			ps.prevPos[i] = tmp;
+			if (!Collisions::CollisionBox(ps.pos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5)) && enableBox) { /*REBOTE BOX*/}	
+			else if(Collisions::CollisionSphere(ps.pos[i], sphere.pos, sphere.radius) && enableSphere) { /*REBOTE SPHERE*/}
+			else 
+			{
+				glm::vec3 tmp = ps.pos[i];
+				ps.pos[i] += (ps.pos[i] - ps.prevPos[i]) + (forces[i] / ps.mass) * powf(dt, 2.0f);
+				ps.prevPos[i] = tmp;
 
-			ps.vel[i] += (ps.pos[i] - ps.prevPos[i]) / dt;
+				ps.vel[i] += (ps.pos[i] - ps.prevPos[i]) / dt;
+			}
 		}
 	}
 }

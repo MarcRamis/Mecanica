@@ -6,6 +6,7 @@
 #include "ParticleSystem.h"
 #include "Mesh.h"
 #include "Solver.h"
+#include "Sphere.h"
 
 #include <ctime>
 
@@ -26,8 +27,7 @@ Mesh mesh; // cloth
 Verlet solver; // movement
 
 // Sphere gui variablee modifier
-glm::vec3 spherePos = glm::vec3(0.f, 1.f, 0.f);
-float sphereRadius = 1.f;
+SphereCollider sphere(glm::vec3(0.f,1.f,0.f), 1.f);
 
 // Forces
 glm::vec3* forces;
@@ -62,9 +62,10 @@ void GUI() {
 
 		if (ImGui::CollapsingHeader("Collisions"))
 		{
-			ImGui::Checkbox("Use Sphere", &renderSphere);
-			ImGui::DragFloat3("Sphere Position", glm::value_ptr(spherePos), 0.01f);
-			ImGui::DragFloat("Sphere Radius", &sphereRadius, 0.01f);
+			ImGui::Checkbox("Box collision", &solver.enableBox);
+			ImGui::Checkbox("Use Sphere", &solver.enableSphere);
+			ImGui::DragFloat3("Sphere Position", glm::value_ptr(sphere.pos), 0.01f);
+			ImGui::DragFloat("Sphere Radius", &sphere.radius, 0.01f);
 		}
 
 		if (ImGui::CollapsingHeader("Forces"))
@@ -79,7 +80,7 @@ void GUI() {
 			ImGui::DragFloat2("Shear", k_shear_parameters, 0.01f);
 			ImGui::DragFloat2("Bend", k_bend_parameters, 0.01f);
 			
-			ImGui::DragFloat("Particle Link Distance", &linkDistance, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Particle Link Distance", &linkDistance, 0.001f, 0.0f, 1.0f);
 		}
 	}
 
@@ -102,6 +103,25 @@ void ResetCloth()
 	for (int i = 0; i < mesh.maxParticles; i++)
 	{
 		gravity[i] = glm::vec3(gravityValues);
+	}
+}
+
+void Timer()
+{
+	if (!once) // DO ONCE
+	{
+		// Init time
+		start = clock();
+		once = true;
+	}
+	// Timer
+	diff = clock() - start;
+	elapsedsec = diff / CLOCKS_PER_SEC;
+	if (elapsedsec >= sec)
+	{
+		ResetCloth();
+		elapsedsec = 0.0f;
+		start = clock();
 	}
 }
 
@@ -144,25 +164,13 @@ void PhysicsInit() {
 	}
 }
 
+
+
 void PhysicsUpdate(float dt) {
 		
-	if (simulationIsActive)
+	if (simulationIsActive) // IN SIMULATION ON
 	{	
-		if (!once)
-		{
-			// Init time
-			start = clock();
-			once = true;
-		}
-		// Timer
-		diff = clock() - start;
-		elapsedsec = diff / CLOCKS_PER_SEC;
-		if (elapsedsec >= sec)
-		{
-			ResetCloth();
-			elapsedsec = 0.0f;
-			start = clock();
-		}
+		Timer();
 		
 		forces = mesh.get_spring_forces();
 		
@@ -174,12 +182,12 @@ void PhysicsUpdate(float dt) {
 			}
 		}
 
-		solver.UpdateParticles(mesh, forces, dt);
+		solver.UpdateParticles(mesh, forces, dt / 10, sphere);
 	}
 
 	ClothMesh::updateClothMesh(&(mesh.pos[0].x));
 	LilSpheres::updateParticles(0, mesh.width * mesh.height, &(mesh.pos[0].x));
-	Sphere::updateSphere(spherePos, sphereRadius);
+	Sphere::updateSphere(sphere.pos, sphere.radius);
 }
 
 void PhysicsCleanup() {

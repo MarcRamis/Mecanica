@@ -138,6 +138,7 @@ xcopy $(ProjectDir)libs\SDL2.dll $(OutDir) /y /d</Command>
     <ClCompile Include="include\imgui\imgui_demo.cpp" />
     <ClCompile Include="include\imgui\imgui_draw.cpp" />
     <ClCompile Include="include\imgui\imgui_impl_sdl_gl3.cpp" />
+    <ClCompile Include="src\Collisions.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Exemple.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
@@ -148,9 +149,11 @@ xcopy $(ProjectDir)libs\SDL2.dll $(OutDir) /y /d</Command>
     <ClCompile Include="src\Solver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Collisions.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\ParticleSystem.h" />
     <ClInclude Include="src\Solver.h" />
+    <ClInclude Include="src\Sphere.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

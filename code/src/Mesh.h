@@ -47,7 +47,4 @@ public:
 
 	glm::vec3 get_p1_force(glm::vec3 *p1, glm::vec3 *p2, glm::vec3 *v1, glm::vec3 *v2);
 	glm::vec3 get_p2_force(glm::vec3 *p1, glm::vec3 *p2, glm::vec3 *v1, glm::vec3 *v2);
-	
-	int GetP1Index() { return p1_idx; };
-	int GetP2Index() { return p2_idx; };
 };

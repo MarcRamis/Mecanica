@@ -45,7 +45,6 @@ glm::vec3* Mesh::get_spring_forces()
 
 void Mesh::CreateSprings(float linkDistance, float kForces_stretch[], float kForces_shear[], float kForces_bending[])
 {
-
 #pragma region Structural Strings
 	
 	// LEFT - RIGHT
@@ -88,12 +87,9 @@ void Mesh::CreateSprings(float linkDistance, float kForces_stretch[], float kFor
 				glm::sqrt(glm::pow(linkDistance, 2) + glm::pow(linkDistance, 2)), get_index(row, col), get_index(row, col + width - 1)));
 		}
 	}
-	int y = 0;
-
 #pragma endregion
 
 #pragma region Bending
-	
 	// LEFT - RIGHT
 	for (int row = 0; row < height; row++)
 	{
@@ -103,7 +99,6 @@ void Mesh::CreateSprings(float linkDistance, float kForces_stretch[], float kFor
 		}
 	}
 
-	int x = 0;
 	// DOWN - UP
 	for (int row = 0; row < height - 2; row++)
 	{
@@ -112,7 +107,6 @@ void Mesh::CreateSprings(float linkDistance, float kForces_stretch[], float kFor
 			springs.push_back(Spring(kForces_bending[0], kForces_stretch[1], linkDistance, get_index(row, col), get_index(row + 2, col)));
 		}
 	}
-	x = 0;
 
 #pragma endregion
 }
