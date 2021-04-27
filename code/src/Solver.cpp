@@ -21,9 +21,17 @@ void Verlet::UpdateParticles(ParticleSystem ps, glm::vec3* forces, float dt, Sph
 		if ( i == 0 || i == 13) {}
 		else
 		{
-			if (!Collisions::CollisionBox(ps.pos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5)) && enableBox) { /*REBOTE BOX*/}	
+			if (!Collisions::CollisionBox(ps.pos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5)) && enableBox) 
+			{ 
+				ps.pos[i] = Collisions::CollionBoxBounce(ps.pos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
+				ps.vel[i] = Collisions::CollionBoxBounce(ps.vel[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
+				ps.prevPos[i] = Collisions::CollionBoxBounce(ps.prevPos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
+				//Collisions::CollionBoxBounce(ps.pos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
+				//Collisions::CollionBoxBounce(ps.vel[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
+				//Collisions::CollionBoxBounce(ps.prevPos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
+			}	
 			else if(Collisions::CollisionSphere(ps.pos[i], sphere.pos, sphere.radius) && enableSphere) { /*REBOTE SPHERE*/}
-			else 
+			else // CALCULO SOLVER
 			{
 				glm::vec3 tmp = ps.pos[i];
 				ps.pos[i] += (ps.pos[i] - ps.prevPos[i]) + (forces[i] / ps.mass) * powf(dt, 2.0f);

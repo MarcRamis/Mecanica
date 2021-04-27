@@ -13,3 +13,25 @@ bool Collisions::CollisionSphere(glm::vec3 pos, glm::vec3 spherePos, float spher
 	
 	return distance < sphereRadius;
 }
+
+glm::vec3 Collisions::CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec3 boxMax)
+{
+	glm::vec3 n;
+	float d;
+
+	if (pos.y <= boxMin.y)
+	{
+		n = glm::normalize(glm::cross(glm::vec3(-5, 0, 5), glm::vec3(5, 0, 5)));
+		//d = ;
+
+		pos = pos - (1 + 1.0f) * (glm::dot(n, pos) + 0.0f) * n;
+	}
+
+
+	return pos;
+}
+
+glm::vec3 Collisions::CollionSphereBounce(glm::vec3 pos, glm::vec3 spherePos, float sphereRadius)
+{
+	return glm::vec3(0.f);
+}
