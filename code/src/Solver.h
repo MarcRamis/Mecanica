@@ -3,7 +3,6 @@
 #include "ParticleSystem.h"
 #include "Collisions.h"
 #include "Sphere.h"
-#include "Utils.h"
 
 class Solver
 {

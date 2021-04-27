@@ -22,9 +22,12 @@ glm::vec3 Collisions::CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec
 	if (pos.y <= boxMin.y)
 	{
 		n = glm::normalize(glm::cross(glm::vec3(-5, 0, 5), glm::vec3(5, 0, 5)));
-		//d = ;
+		d = (n.x * pos.x) + (n.y * pos.y) + (n.z * pos.z);
 
-		pos = pos - (1 + 1.0f) * (glm::dot(n, pos) + 0.0f) * n;
+		//std::cout << glm::to_string(n) << std::endl;
+		//std::cout << d << std::endl;
+		
+		pos = pos - (1 + 1.0f) * (glm::dot(n, pos) + d) * n;
 	}
 
 
@@ -33,5 +36,5 @@ glm::vec3 Collisions::CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec
 
 glm::vec3 Collisions::CollionSphereBounce(glm::vec3 pos, glm::vec3 spherePos, float sphereRadius)
 {
-	return glm::vec3(0.f);
+	return pos;
 }

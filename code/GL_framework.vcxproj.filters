@@ -74,8 +74,5 @@
     <ClInclude Include="src\Sphere.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utils.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
