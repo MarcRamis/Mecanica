@@ -50,6 +50,7 @@ void Mesh::CreateSprings(float linkDistance, float kForces_stretch[], float kFor
 	}
 	// DOWN - UP
 	for (int row = 0; row < height - 1; row++)
+
 	{
 		for (int col = 0; col < width; col++)
 		{

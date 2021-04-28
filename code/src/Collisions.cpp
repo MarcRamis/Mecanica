@@ -28,7 +28,7 @@ glm::vec3 Collisions::CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec
 	}
 	if (pos.x <= boxMin.x)
 	{
-		n = glm::normalize(glm::vec3(1, 0, 0));
+		n = glm::normalize(glm::vec3(-1, 0, 0));
 		d = boxMin.x;
 
 		pos = pos - (1 + coef_elast) * (glm::dot(n, pos) + d) * n;
@@ -40,7 +40,7 @@ glm::vec3 Collisions::CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec
 		d = boxMax.y;
 
 		pos = pos - (1 + coef_elast) * (glm::dot(n, pos) + d) * n;
-
+		
 		//n = glm::normalize(glm::cross(glm::vec3(-5, 10, -5), glm::vec3(5, 10, 5)));
 		//d = (n.x * pos.x) + (n.y * pos.y) + (n.z * pos.z);
 
@@ -63,7 +63,7 @@ glm::vec3 Collisions::CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec
 
 	if (pos.z >= boxMax.z)
 	{
-		n = glm::normalize(glm::vec3(0, 0, 1));
+		n = glm::normalize(glm::vec3(0, 0, -1));
 		d = boxMax.z;
 
 		pos = pos - (1 + coef_elast) * (glm::dot(n, pos) + d) * n;

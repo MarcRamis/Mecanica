@@ -34,10 +34,10 @@ glm::vec3 *gravity;
 glm::vec3 gravityValues = glm::vec3(0.0f, -9.81f, 0.0f);
 bool isForcesActivated = false;
 
-// Spring parameters for GUI	--> NO BEING USED YET
-float k_stretch_parameters[] = { 1000.f, 0.1f};
-float k_shear_parameters[] = { 1000.f, 0.1f };
-float k_bend_parameters[] = { 1000.f, 0.1f };
+// Spring parameters for GUI
+float k_stretch_parameters[] = { 1000.f, 50.f};
+float k_shear_parameters[] = { 1000.f, 50.f };
+float k_bend_parameters[] = { 1000.f, 50.f };
 float linkDistance = 0.3f;
 
 // Times
@@ -75,9 +75,9 @@ void GUI() {
 		
 		if (ImGui::CollapsingHeader("Springs"))
 		{
-			ImGui::DragFloat2("Stretch", k_stretch_parameters, 1.f);
-			ImGui::DragFloat2("Shear", k_shear_parameters, 1.f);
-			ImGui::DragFloat2("Bend", k_bend_parameters, 1.f);
+			ImGui::DragFloat2("Stretch", k_stretch_parameters, 0.1f);
+			ImGui::DragFloat2("Shear", k_shear_parameters, 0.1f);
+			ImGui::DragFloat2("Bend", k_bend_parameters, 0.1f);
 			
 			ImGui::DragFloat("Particle Link Distance", &linkDistance, 0.001f, 0.0f, 1.0f);
 		}
@@ -106,13 +106,13 @@ void ResetCloth()
 	}
 
 	// Init Sphere
-	float randX = static_cast <float>((rand() / 5.f) - 5.f);
-	float randY = static_cast <float>(rand() / 10.f);
-	float randZ = static_cast <float>((rand() / 5.f) - 5.f);
-
-	std::cout << randX << randY << randZ << std::endl;
-
-	sphere.pos = glm::vec3(randX, randY, randZ);
+	//float randX = static_cast <float>((rand() / 5.f) - 5.f);
+	//float randY = static_cast <float>(rand() / 10.f);
+	//float randZ = static_cast <float>((rand() / 5.f) - 5.f);
+	//
+	//std::cout << randX << randY << randZ << std::endl;
+	//
+	//sphere.pos = glm::vec3(randX, randY, randZ);
 }
 
 void Timer()
@@ -140,7 +140,7 @@ void PhysicsInit() {
 
 	// Render prims
 	renderSphere = false;
-	renderParticles = true;
+	renderParticles = false;
 	renderCloth = true;
 
 	// Init solver
