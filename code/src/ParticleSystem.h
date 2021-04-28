@@ -24,6 +24,9 @@ public:
 	glm::vec3* vel;
 	glm::vec3* forces;
 	float mass;
+	
+	float coef_elasticity = 0.1;
+	float coef_fric = 1.0;
 
 	int maxParticles;	// TotalParticles
 

@@ -81,6 +81,7 @@ void GUI() {
 			
 			ImGui::DragFloat("Particle Link Distance", &linkDistance, 0.001f, 0.0f, 1.0f);
 		}
+		ImGui::DragFloat("Coef_Elasticity", &mesh.coef_elasticity, 0.01, 0.0f, 1.f);
 	}
 
 	ImGui::End();
@@ -201,7 +202,6 @@ void PhysicsUpdate(float dt) {
 					forces[i] += gravity[i];
 				}
 			}
-
 			solver.UpdateParticles(mesh, forces, dt / 10, sphere);
 		}
 	}

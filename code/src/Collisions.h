@@ -16,6 +16,6 @@ public:
 	static bool CollisionSphere(glm::vec3 pos, glm::vec3 spherePos, float sphereRadius);
 
 	// Bouncing
-	static glm::vec3 CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec3 boxMax);
+	static glm::vec3 CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec3 boxMax, float coef_elast);
 	static glm::vec3 CollionSphereBounce(glm::vec3 pos, glm::vec3 spherePos, float sphereRadius);
 };
