@@ -18,7 +18,7 @@ glm::vec3 Collisions::CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec
 {
 	glm::vec3 n;
 	float d;
-	// SI NO EXPLOTA HACIA UN LADO EXPLOTA HACIA EL OTRO
+
 	if (pos.x >= boxMax.x)
 	{
 		n = glm::normalize(glm::vec3(-1, 0, 0));
