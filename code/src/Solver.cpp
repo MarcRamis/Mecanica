@@ -26,11 +26,8 @@ void Verlet::UpdateParticles(ParticleSystem ps, glm::vec3* forces, float dt, Sph
 				ps.pos[i] = Collisions::CollionBoxBounce(ps.pos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
 				ps.vel[i] = Collisions::CollionBoxBounce(ps.vel[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
 				ps.prevPos[i] = Collisions::CollionBoxBounce(ps.prevPos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
-				//Collisions::CollionBoxBounce(ps.pos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
-				//Collisions::CollionBoxBounce(ps.vel[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
-				//Collisions::CollionBoxBounce(ps.prevPos[i], glm::vec3(-5, 0, -5), glm::vec3(5, 10, 5));
 			}	
-			else if(Collisions::CollisionSphere(ps.pos[i], sphere.pos, sphere.radius) && enableSphere) { /*REBOTE SPHERE*/}
+			else if(Collisions::CollisionSphere(ps.pos[i], sphere.pos, sphere.radius) && sphere.enabled) { /*REBOTE SPHERE*/}
 			else // CALCULO SOLVER
 			{
 				glm::vec3 tmp = ps.pos[i];

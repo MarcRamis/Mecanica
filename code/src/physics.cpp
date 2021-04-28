@@ -13,7 +13,6 @@
 // Forward declaration
 extern bool renderParticles;
 extern bool renderSphere;
-extern bool renderCapsule;
 extern bool renderCloth;
 
 namespace Sphere {
@@ -27,7 +26,7 @@ Mesh mesh; // cloth
 Verlet solver; // movement
 
 // Sphere gui variablee modifier
-SphereCollider sphere(glm::vec3(0.f,1.f,0.f), 1.f);
+SphereCollider sphere(glm::vec3(0.f),1.f);
 
 // Forces
 glm::vec3* forces;
@@ -36,10 +35,10 @@ glm::vec3 gravityValues = glm::vec3(0.0f, -9.81f, 0.0f);
 bool isForcesActivated = false;
 
 // Spring parameters for GUI	--> NO BEING USED YET
-float k_stretch_parameters[] = { 30.f, 1.f};
-float k_shear_parameters[] = { 60.f, 1.f };
-float k_bend_parameters[] = { 90.f, 1.f };
-float linkDistance = 0.2f;
+float k_stretch_parameters[] = { 1000.f, 0.1f};
+float k_shear_parameters[] = { 1000.f, 0.1f };
+float k_bend_parameters[] = { 1000.f, 0.1f };
+float linkDistance = 0.3f;
 
 // Times
 clock_t start, diff;
@@ -63,7 +62,7 @@ void GUI() {
 		if (ImGui::CollapsingHeader("Collisions"))
 		{
 			ImGui::Checkbox("Box collision", &solver.enableBox);
-			ImGui::Checkbox("Use Sphere", &solver.enableSphere);
+			ImGui::Checkbox("Use Sphere", &renderSphere);
 			ImGui::DragFloat3("Sphere Position", glm::value_ptr(sphere.pos), 0.01f);
 			ImGui::DragFloat("Sphere Radius", &sphere.radius, 0.01f);
 		}
@@ -76,9 +75,9 @@ void GUI() {
 		
 		if (ImGui::CollapsingHeader("Springs"))
 		{
-			ImGui::DragFloat2("Stretch", k_stretch_parameters, 0.01f);
-			ImGui::DragFloat2("Shear", k_shear_parameters, 0.01f);
-			ImGui::DragFloat2("Bend", k_bend_parameters, 0.01f);
+			ImGui::DragFloat2("Stretch", k_stretch_parameters, 1.f);
+			ImGui::DragFloat2("Shear", k_shear_parameters, 1.f);
+			ImGui::DragFloat2("Bend", k_bend_parameters, 1.f);
 			
 			ImGui::DragFloat("Particle Link Distance", &linkDistance, 0.001f, 0.0f, 1.0f);
 		}
@@ -89,8 +88,8 @@ void GUI() {
 
 void ResetCloth()
 {
-	mesh.Reset();
-	
+	// Init Cloth
+	mesh.Reset(); // this deletes previous mesh
 	mesh = Mesh(ClothMesh::numCols, ClothMesh::numRows, linkDistance);
 	mesh.CreateSprings(linkDistance, k_stretch_parameters, k_shear_parameters, k_bend_parameters);
 	
@@ -104,6 +103,15 @@ void ResetCloth()
 	{
 		gravity[i] = glm::vec3(gravityValues);
 	}
+
+	// Init Sphere
+	float randX = static_cast <float>((rand() / 5.f) - 5.f);
+	float randY = static_cast <float>(rand() / 10.f);
+	float randZ = static_cast <float>((rand() / 5.f) - 5.f);
+
+	std::cout << randX << randY << randZ << std::endl;
+
+	sphere.pos = glm::vec3(randX, randY, randZ);
 }
 
 void Timer()
@@ -126,6 +134,8 @@ void Timer()
 }
 
 void PhysicsInit() {
+	
+	srand(time(NULL));
 
 	// Render prims
 	renderSphere = false;
@@ -162,32 +172,44 @@ void PhysicsInit() {
 	{
 		gravity[i] = glm::vec3(gravityValues);
 	}
+	
+	// Init Sphere
+
+	//float randX = static_cast <float>((rand() / (5.f - (-5.f) + 1) + (-5.f)));
+	//float randY = static_cast <float>(rand() / 10.f);
+	//float randZ = static_cast <float>((rand() / (5.f - (-5.f) + 1) + (-5.f)));
+
+	//std::cout << randY << std::endl;
+	//
+	//sphere.pos = glm::vec3(randX, randY, randZ);
 }
 
-
-
 void PhysicsUpdate(float dt) {
-		
+
 	if (simulationIsActive) // IN SIMULATION ON
 	{	
 		Timer();
 		
-		forces = mesh.get_spring_forces();
-		
-		if (isForcesActivated)
+		for (int i = 0; i < 10; i++)
 		{
-			for (int i = 0; i < mesh.maxParticles; i++)
-			{
-				forces[i] += gravity[i];
-			}
-		}
+			forces = mesh.get_spring_forces();
 
-		solver.UpdateParticles(mesh, forces, dt / 10, sphere);
+			if (isForcesActivated)
+			{
+				for (int i = 0; i < mesh.maxParticles; i++)
+				{
+					forces[i] += gravity[i];
+				}
+			}
+
+			solver.UpdateParticles(mesh, forces, dt / 10, sphere);
+		}
 	}
 
 	ClothMesh::updateClothMesh(&(mesh.pos[0].x));
 	LilSpheres::updateParticles(0, mesh.width * mesh.height, &(mesh.pos[0].x));
 	Sphere::updateSphere(sphere.pos, sphere.radius);
+	sphere.enabled = renderSphere;
 }
 
 void PhysicsCleanup() {

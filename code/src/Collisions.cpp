@@ -19,16 +19,38 @@ glm::vec3 Collisions::CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec
 	glm::vec3 n;
 	float d;
 
+	if (pos.x >= boxMax.x)
+	{
+
+	}
+	if (pos.x <= boxMin.x)
+	{
+
+	}
+
+	if (pos.y >= boxMax.y)
+	{
+		//n = glm::normalize(glm::cross(glm::vec3(-5, 10, -5), glm::vec3(5, 10, 5)));
+		//d = (n.x * pos.x) + (n.y * pos.y) + (n.z * pos.z);
+
+		//pos = pos - (1 + 1.0f) * (glm::dot(n, pos) + d) * n;
+	}
+
 	if (pos.y <= boxMin.y)
 	{
 		n = glm::normalize(glm::cross(glm::vec3(-5, 0, 5), glm::vec3(5, 0, 5)));
 		d = (n.x * pos.x) + (n.y * pos.y) + (n.z * pos.z);
-
-		//std::cout << glm::to_string(n) << std::endl;
-		//std::cout << d << std::endl;
 		
 		pos = pos - (1 + 1.0f) * (glm::dot(n, pos) + d) * n;
 	}
+
+	if (pos.z >= boxMax.z)
+	{
+	}
+	if (pos.z <= boxMin.z)
+	{
+	}
+	
 
 
 	return pos;
