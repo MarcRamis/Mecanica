@@ -11,7 +11,7 @@ bool Collisions::CollisionSphere(glm::vec3 pos, glm::vec3 spherePos, float spher
 {
 	float distance = sqrt(pow(pos.x - spherePos.x,2) + pow(pos.y - spherePos.y, 2) + pow(pos.z - spherePos.z, 2));
 	
-	return distance < sphereRadius;
+	return distance <= sphereRadius;
 }
 
 glm::vec3 Collisions::CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec3 boxMax, float coef_elast)
@@ -68,7 +68,23 @@ glm::vec3 Collisions::CollionBoxBounce(glm::vec3 pos, glm::vec3 boxMin, glm::vec
 	return pos;
 }
 
-glm::vec3 Collisions::CollionSphereBounce(glm::vec3 pos, glm::vec3 spherePos, float sphereRadius)
+glm::vec3 Collisions::CollionSphereBounce(glm::vec3 pos, glm::vec3 spherePos, float sphereRadius, float coef_elast)
 {
+	//float a = glm::pow((pos.x * vel.x - spherePos.x), 2.f) + glm::pow((pos.y * vel.y - spherePos.y), 2.f) + glm::pow((pos.z * vel.z - spherePos.z), 2.f);
+	//a -= sphereRadius;
+	//glm::vec3 q = glm::vec3(pos.x + a * vel.x, pos.y + a * vel.y, pos.z + a * vel.z);	// point colision
+	//
+	//glm::vec3 n = glm::normalize(q - spherePos);
+	//float d = (n.x * -q.x) + (n.y * -q.y) + (n.z * -q.z);
+	//
+	//pos = pos - (1 + coef_elast) * (glm::dot(n, pos) + d) * n;
+	//
+	//return pos;
+
+	glm::vec3 n = glm::normalize(pos - spherePos);
+	float d = (n.x * -pos.x) + (n.y * -pos.y) + (n.z * -pos.z);
+
+	pos = pos - (1 + coef_elast) * (glm::dot(n, pos) + d) * n;
+
 	return pos;
 }
