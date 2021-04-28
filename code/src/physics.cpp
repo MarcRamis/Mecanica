@@ -2,6 +2,7 @@
 #include <imgui\imgui_impl_sdl_gl3.h>
 #include <glm\glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/random.hpp>
 
 #include "ParticleSystem.h"
 #include "Mesh.h"
@@ -43,7 +44,7 @@ float linkDistance = 0.3f;
 // Times
 clock_t start, diff;
 float elapsedsec = 0.0f;
-float sec = 10.f;
+float sec = 20.f;
 bool once = false;
 
 bool show_test_window = false;
@@ -63,8 +64,13 @@ void GUI() {
 		{
 			ImGui::Checkbox("Box collision", &solver.enableBox);
 			ImGui::Checkbox("Use Sphere", &renderSphere);
-			ImGui::DragFloat3("Sphere Position", glm::value_ptr(sphere.pos), 0.01f);
-			ImGui::DragFloat("Sphere Radius", &sphere.radius, 0.01f);
+
+			if (renderSphere)
+			{
+				ImGui::DragFloat3("Sphere Position", glm::value_ptr(sphere.pos), 0.01f);
+				ImGui::DragFloat("Sphere Radius", &sphere.radius, 0.01f);
+			}
+
 		}
 
 		if (ImGui::CollapsingHeader("Forces"))
@@ -106,13 +112,7 @@ void ResetCloth()
 	}
 
 	// Init Sphere
-	//float randX = static_cast <float>((rand() / 5.f) - 5.f);
-	//float randY = static_cast <float>(rand() / 10.f);
-	//float randZ = static_cast <float>((rand() / 5.f) - 5.f);
-	//
-	//std::cout << randX << randY << randZ << std::endl;
-	//
-	//sphere.pos = glm::vec3(randX, randY, randZ);
+	sphere = SphereCollider(glm::vec3(glm::linearRand(-5.f, 5.f), glm::linearRand(0.f, 10.f), glm::linearRand(-5.f, 5.f)), glm::linearRand(1.0f, 3.0f));
 }
 
 void Timer()
@@ -136,8 +136,8 @@ void Timer()
 
 void PhysicsInit() {
 	
-	srand(time(NULL));
-
+	srand(time(nullptr));
+	
 	// Render prims
 	renderSphere = false;
 	renderParticles = false;
@@ -175,14 +175,7 @@ void PhysicsInit() {
 	}
 	
 	// Init Sphere
-
-	//float randX = static_cast <float>((rand() / (5.f - (-5.f) + 1) + (-5.f)));
-	//float randY = static_cast <float>(rand() / 10.f);
-	//float randZ = static_cast <float>((rand() / (5.f - (-5.f) + 1) + (-5.f)));
-
-	//std::cout << randY << std::endl;
-	//
-	//sphere.pos = glm::vec3(randX, randY, randZ);
+	sphere = SphereCollider(glm::vec3(glm::linearRand(-5.f, 5.f), glm::linearRand(0.f, 10.f), glm::linearRand(-5.f, 5.f)), glm::linearRand(1.0f,3.0f));
 }
 
 void PhysicsUpdate(float dt) {
