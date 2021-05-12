@@ -44,6 +44,7 @@ void GUI() {
 #pragma endregion
 
 #pragma region Loop Physics
+
 Box* box;
 Ball* ball;
 
@@ -76,6 +77,7 @@ void PhysicsUpdate(float dt) {
 
 void PhysicsCleanup() {
 	delete box;
+	delete ball;
 }
 
 #pragma endregion
