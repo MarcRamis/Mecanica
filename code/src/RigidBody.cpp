@@ -70,7 +70,7 @@ void Box::draw() {
 	RigidBody::State state = getState();
 	glm::mat4 transform = glm::translate(glm::mat4(1.f), state.com) *
 		glm::mat4_cast(state.rotation) *
-		glm::scale(glm::mat4(1.f), glm::vec3(width, height, depth);
+		glm::scale(glm::mat4(1.f), glm::vec3(width, height, depth));
 	Cube::updateCube(transform);
 }
 
