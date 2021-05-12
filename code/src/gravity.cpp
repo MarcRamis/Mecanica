@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "RigidBody.h"
+#include "Solver.h"
 
 extern bool renderSphere;
 extern bool renderCube;
@@ -14,8 +15,8 @@ namespace Gravity {
 
 	Box* box;
 	Ball* ball;
-	//RigidBodySolver solver;
-
+	SIEuler solver;
+	
 	const float G = 0.001f;
 
 	glm::quat getRotationQuaternion(glm::vec3 axis, float angle) {
@@ -37,7 +38,7 @@ namespace Gravity {
 
 		glm::vec3 boxCom = glm::vec3(4.0f, 5.0f, 0.0f);
 		glm::vec3 ballCom = glm::vec3(0.f, 5.f, 0.f);
-
+		
 		glm::vec3 boxLinearVelocity = glm::vec3(0.f, 0.f, 1.f);
 
 		box->initializeState(
@@ -55,9 +56,9 @@ namespace Gravity {
 	void update(float dt) {
 		glm::vec3 force = getGravityForce(box, ball);
 		glm::vec3 torques = glm::vec3(0.f);
-
-		//solver.updateState(box, force, torques, dt);
-		//solver.updateState(ball, -force, torques, dt);
+		
+		solver.Update(box, force, torques, dt);
+		solver.Update(ball, -force, torques, dt);
 
 		box->draw();
 		ball->draw();

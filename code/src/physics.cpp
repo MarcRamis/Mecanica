@@ -7,13 +7,6 @@
 
 #pragma region Forward Declarations
 
-namespace Cube {
-	extern void updateCube(const glm::mat4& transform);
-}
-
-namespace Sphere {
-	extern void updateSphere(glm::vec3 pos, float radius = 1.f);
-}
 extern bool renderCube;
 extern bool renderSphere;
 
@@ -23,6 +16,21 @@ namespace Gravity {
 	extern void init();
 	extern void update(float dt);
 	extern void cleanup();
+}
+
+float G = 0.001f;
+
+glm::quat getRotationQuaternion(glm::vec3 axis, float angle) {
+	float w = cos(angle / 2);
+	glm::vec3 v = sin(angle / 2) * axis;
+	return glm::normalize(glm::quat(w, v));
+}
+
+glm::vec3 getGravityForce(RigidBody* r1, RigidBody* r2) {
+	glm::vec3 direction = r2->getState().com - r1->getState().com;
+	float distance = glm::length(direction);
+	float magnitude = G * r1->getMass() * r2->getMass() / distance;
+	return glm::normalize(direction) * magnitude;
 }
 
 #pragma endregion
@@ -54,9 +62,9 @@ void PhysicsInit() {
 	ball = new Ball(1.f,1.f);
 
 	box->initializeState(
-		glm::vec3(0.f, 5.f, 0.f), 
-		glm::quat(0.f, 0.f, 0.f, 0.f), 
-		glm::vec3(0.f, 0.f, 0.f), 
+		glm::vec3(0.f, 5.f, 0.f),
+		glm::quat(0.f,0.f,0.f,0.f),
+		glm::vec3(0.f, 0.f, 1.f), 
 		glm::vec3(0.f, 0.f, 0.f));
 
 	ball->initializeState(
@@ -70,7 +78,7 @@ void PhysicsInit() {
 }
 
 void PhysicsUpdate(float dt) {
-
+	
 	box->draw();
 	ball->draw();
 }
