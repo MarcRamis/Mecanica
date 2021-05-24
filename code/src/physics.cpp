@@ -2,8 +2,13 @@
 #include <imgui\imgui_impl_sdl_gl3.h>
 #include <glm\glm.hpp>
 #include <glm\gtc\quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
+
+#include <iostream>
 
 #include "Rigidbody.h"
+#include "Solver.h"
 
 #pragma region Forward Declarations
 
@@ -35,6 +40,13 @@ glm::vec3 getGravityForce(RigidBody* r1, RigidBody* r2) {
 
 #pragma endregion
 
+#pragma region Variables
+
+glm::vec3 gravity = glm::vec3(0.f, 0.f,0.f);
+glm::vec3 torque = glm::vec3(0.f, 0.f, 1.f);
+
+#pragma endregion
+
 #pragma region ImGui
 
 bool show_test_window = false;
@@ -44,6 +56,9 @@ void GUI() {
 
 	{	
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);//FrameRate
+		
+		ImGui::DragFloat3("Gravity",glm::value_ptr(gravity),0.1f);
+		ImGui::DragFloat3("Torque", glm::value_ptr(torque), 0.1f);
 	}
 	
 	ImGui::End();
@@ -55,37 +70,33 @@ void GUI() {
 
 Box* box;
 Ball* ball;
+SIEuler solver;
 
 void PhysicsInit() {
 
 	box = new Box(1.f,1.f,1.f,1.f);
-	ball = new Ball(1.f,1.f);
 
 	box->initializeState(
 		glm::vec3(0.f, 5.f, 0.f),
 		glm::quat(0.f,0.f,0.f,0.f),
-		glm::vec3(0.f, 0.f, 1.f), 
+		glm::vec3(0.f, 0.f, 0.f), 
 		glm::vec3(0.f, 0.f, 0.f));
-
-	ball->initializeState(
-		glm::vec3(2.5f, 5.f, 0.f),
-		glm::quat(0.f, 0.f, 0.f, 0.f),
-		glm::vec3(0.f, 0.f, 0.f),
-		glm::vec3(0.f, 0.f, 0.f));
-
+	
 	renderCube = true;
-	renderSphere = true;
 }
 
 void PhysicsUpdate(float dt) {
 	
+	glm::vec3 force = glm::vec3(gravity);
+	glm::vec3 torques = glm::vec3(torque);
+
+	solver.Update(box, force, torques, dt);
+	
 	box->draw();
-	ball->draw();
 }
 
 void PhysicsCleanup() {
 	delete box;
-	delete ball;
 }
 
 #pragma endregion

@@ -17,6 +17,7 @@ RigidBody::RigidBody(float mass) : mass(mass) {};
 void RigidBody::initializeState(glm::vec3 initialPosition, glm::quat initialRotation, glm::vec3 linearSpeed, glm::vec3 angularSpeed) {
 	// Initialize the state outside the constructor to use the virtual method getInitialInertiaTensor
 	initialInertiaTensor = getInitialInertiaTensor();
+	
 	state = {
 		initialPosition,
 		initialRotation,
@@ -56,8 +57,8 @@ glm::mat3 RigidBody::getRotationMatrix() {
 }
 
 glm::mat3 RigidBody::getInertiaTensor() {
-	// TODO implement
-	return glm::mat3(1.f);
+	
+	return getRotationMatrix() * initialInertiaTensor * glm::transpose(getRotationMatrix());
 }
 
 #pragma endregion
@@ -76,7 +77,10 @@ void Box::draw() {
 
 glm::mat3 Box::getInitialInertiaTensor() {
 	// TODO implement
-	return glm::mat3(1.f);
+	return glm::mat3(
+		(1.f / 12.f) * getMass() * (powf(height,2) + powf(depth, 2)), 0.f, 0.f, 
+		0.f, (1.f / 12.f) * getMass() * (powf(width, 2) + powf(depth, 2)), 0.f,
+		0.f, 0.f, (1.f / 12.f) * getMass() * (powf(width, 2) + powf(height, 2)) );
 }
 #pragma endregion
 
@@ -88,8 +92,11 @@ void Ball::draw() {
 }
 
 glm::mat3 Ball::getInitialInertiaTensor() {
-	// TODO implement
-	return glm::mat3(1.f);
+	
+	return glm::mat3(
+		(2.f / 5.f) * getMass() * powf(radius,2), 0.f, 0.f,
+		0.f, (2.f / 5) * getMass() * powf(radius, 2), 0.f,
+		0.f, 0.f, (2.f / 5.f) * getMass() * powf(radius, 2));
 }
 
 #pragma endregion
