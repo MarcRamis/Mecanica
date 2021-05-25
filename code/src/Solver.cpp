@@ -9,6 +9,9 @@ void SIEuler::Update(RigidBody* rb, glm::vec3 forces, glm::vec3 torques, float d
 	rb->state.com += dt * velL; // Center of Mass. Position update
 	
 	glm::vec3 velA = glm::inverse(rb->getInertiaTensor()) * rb->state.angularMomentum; // Angular velocity
-	glm::quat rotation_der = (1.f / 2.f) * velA * rb->getRotationMatrix();	// Rotation derived
-	rb->state.rotation = glm::normalize(rb->state.rotation) + dt * glm::normalize(rotation_der); // Rotation update
+	glm::quat rotation_der = (1.f / 2.f) * velA * glm::normalize(rb->state.rotation);	// Rotation derived
+
+	glm::quat rot = rb->state.rotation + dt * rotation_der;
+	
+	rb->state.rotation = glm::normalize(rot); // Rotation update
 }

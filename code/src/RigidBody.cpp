@@ -6,9 +6,6 @@
 namespace Cube {
 	extern void updateCube(const glm::mat4& transform);
 }
-namespace Sphere {
-	extern void updateSphere(glm::vec3 pos, float radius = 1.f);
-}
 #pragma endregion
 
 #pragma section RigidBody
@@ -82,21 +79,4 @@ glm::mat3 Box::getInitialInertiaTensor() {
 		0.f, (1.f / 12.f) * getMass() * (powf(width, 2) + powf(depth, 2)), 0.f,
 		0.f, 0.f, (1.f / 12.f) * getMass() * (powf(width, 2) + powf(height, 2)) );
 }
-#pragma endregion
-
-#pragma region Ball
-Ball::Ball(float radius, float mass) : RigidBody(mass), radius(radius) {};
-
-void Ball::draw() {
-	Sphere::updateSphere(getState().com, radius);
-}
-
-glm::mat3 Ball::getInitialInertiaTensor() {
-	
-	return glm::mat3(
-		(2.f / 5.f) * getMass() * powf(radius,2), 0.f, 0.f,
-		0.f, (2.f / 5) * getMass() * powf(radius, 2), 0.f,
-		0.f, 0.f, (2.f / 5.f) * getMass() * powf(radius, 2));
-}
-
 #pragma endregion
