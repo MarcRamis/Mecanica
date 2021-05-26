@@ -104,7 +104,7 @@ void InitSimulation()
 	//	getRotationQuaternion(getRandomInitialRotation(), 3.14f / 2.f),
 	//	getRandomInitialImpulse(),
 	//	getRandomInitialImpulse());
-
+	
 	box->initializeState(
 		glm::vec3(0.f,5.f,0.f),
 		getRotationQuaternion(glm::vec3(0.f), 3.14f / 2.f),
@@ -162,7 +162,7 @@ void ImpulseCorrection(RigidBody* rb, glm::vec3 contactPoint, glm::vec3 normal, 
 	}
 }
 
-void CollisionTime(RigidBody *rb, glm::vec3 contactPoints, glm::vec3 boxVector, glm::vec3 normal, float boxSide, float dt)
+void CollisionTimeY(RigidBody *rb, glm::vec3 contactPoints, glm::vec3 boxVector, glm::vec3 normal, float boxSide, float dt)
 {
 	float newTime = dt;
 	glm::vec3 velL = rb->state.linearMomentum / rb->getMass();
@@ -172,13 +172,61 @@ void CollisionTime(RigidBody *rb, glm::vec3 contactPoints, glm::vec3 boxVector, 
 	// Back in time
 	for (int i = 0; i < 3; i++)
 	{
-		tmpPosition = (rb->getState().com + boxVector) + newTime * velL;	// CALCULATE NEW TMP POSITION WITH CORRECT TIME IN CORRECT POSITION
+		tmpPosition = (rb->getState().com + boxVector) + newTime * velL;
 		
 		if (tmpPosition.y < boxSide + tolerance)
 		{
 			newTime = newTime * 0.5f;
 		}
 		else if (tmpPosition.y > boxSide - tolerance)
+		{
+			newTime = newTime * 1.5f;
+		}
+	}
+
+	ImpulseCorrection(rb, tmpPosition, normal, newTime);
+}
+void CollisionTimeX(RigidBody* rb, glm::vec3 contactPoints, glm::vec3 boxVector, glm::vec3 normal, float boxSide, float dt)
+{
+	float newTime = dt;
+	glm::vec3 velL = rb->state.linearMomentum / rb->getMass();
+
+	glm::vec3 tmpPosition;
+
+	// Back in time
+	for (int i = 0; i < 3; i++)
+	{
+		tmpPosition = (rb->getState().com + boxVector) + newTime * velL;
+		
+		if (tmpPosition.x < boxSide + tolerance)
+		{
+			newTime = newTime * 0.5f;
+		}
+		else if (tmpPosition.x > boxSide - tolerance)
+		{
+			newTime = newTime * 1.5f;
+		}
+	}
+
+	ImpulseCorrection(rb, tmpPosition, normal, newTime);
+}
+void CollisionTimeZ(RigidBody* rb, glm::vec3 contactPoints, glm::vec3 boxVector, glm::vec3 normal, float boxSide, float dt)
+{
+	float newTime = dt;
+	glm::vec3 velL = rb->state.linearMomentum / rb->getMass();
+
+	glm::vec3 tmpPosition;
+	
+	// Back in time
+	for (int i = 0; i < 3; i++)
+	{
+		tmpPosition = (rb->getState().com + boxVector) + newTime * velL;
+
+		if (tmpPosition.z < boxSide + tolerance)
+		{
+			newTime = newTime * 0.5f;
+		}
+		else if (tmpPosition.z > boxSide - tolerance)
 		{
 			newTime = newTime * 1.5f;
 		}
@@ -203,60 +251,65 @@ void CollisionBoxWalls(RigidBody *rb, float width, float height, float depth,
 		glm::mat3_cast(rb->getState().rotation) * glm::vec3((-width / 2.f), (height / 2.f), (depth / 2.f)) + rb->getState().com,
 		glm::mat3_cast(rb->getState().rotation) * glm::vec3((-width / 2.f), (height / 2.f), (-depth / 2.f)) + rb->getState().com,
 	};
-
 	std::vector<glm::vec3> boxVector =
 	{
 		glm::mat3_cast(rb->getState().rotation) * glm::vec3((width / 2.f), (height / 2.f), (depth / 2.f)),
-		glm::mat3_cast(rb->getState().rotation)* glm::vec3((width / 2.f), (-height / 2.f), (depth / 2.f)),
-		glm::mat3_cast(rb->getState().rotation) *glm::vec3((width / 2.f), (height / 2.f), (-depth / 2.f)),
-		glm::mat3_cast(rb->getState().rotation) *glm::vec3((width / 2.f), (-height / 2.f), (-depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((width / 2.f), (-height / 2.f), (depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((width / 2.f), (height / 2.f), (-depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((width / 2.f), (-height / 2.f), (-depth / 2.f)),
 
-		glm::mat3_cast(rb->getState().rotation) *glm::vec3((-width / 2.f), (-height / 2.f), (-depth / 2.f)),
-		glm::mat3_cast(rb->getState().rotation) *glm::vec3((-width / 2.f), (-height / 2.f), (depth / 2.f)),
-		glm::mat3_cast(rb->getState().rotation) *glm::vec3((-width / 2.f), (height / 2.f), (depth / 2.f)),
-		glm::mat3_cast(rb->getState().rotation) *glm::vec3((-width / 2.f), (height / 2.f), (-depth / 2.f))
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((-width / 2.f), (-height / 2.f), (-depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((-width / 2.f), (-height / 2.f), (depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((-width / 2.f), (height / 2.f), (depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((-width / 2.f), (height / 2.f), (-depth / 2.f))
 	};
-	
-	//std::vector<glm::vec3> tmpContactPoints;
-	glm::vec3 n;
 
+	glm::vec3 n;
 	for (int i = 0; i < boxVertex.size(); i++)
 	{
 		if (boxVertex.at(i).y <= boxDimensions1.y) // DOWN
 		{
-			//tmpContactPoints.push_back(boxVertex.at(i));
+			rb->rollbackState();
 			n = glm::normalize(glm::vec3(0, 1, 0));
 			
-			rb->rollbackState();
-			
-			CollisionTime(rb, boxVertex.at(i), boxVector.at(i), n, boxDimensions1.y, dt);
+			CollisionTimeY(rb, boxVertex.at(i), boxVector.at(i), n, boxDimensions1.y, dt);
 		}
 		if (boxVertex.at(i).y >= boxDimensions2.y) // UP
 		{
-		//	tmpContactPoints.push_back(boxVertex.at(i));
+			rb->rollbackState();
 			n = glm::normalize(glm::vec3(0, -1, 0));
+
+			CollisionTimeY(rb, boxVertex.at(i), boxVector.at(i), n, boxDimensions2.y, dt);
 		}
 		
 		if (boxVertex.at(i).x <= boxDimensions1.x) // LEFT
 		{
-			//tmpContactPoints.push_back(boxVertex.at(i));
+			rb->rollbackState();
 			n = glm::normalize(glm::vec3(-1, 0, 0));
+
+			CollisionTimeX(rb, boxVertex.at(i), boxVector.at(i), n, boxDimensions1.x, dt);
 		}
 		if (boxVertex.at(i).x >= boxDimensions2.x) // RIGHT
 		{
-			//tmpContactPoints.push_back(boxVertex.at(i));
+			rb->rollbackState();
 			n = glm::normalize(glm::vec3(-1, 0, 0));
+
+			CollisionTimeX(rb, boxVertex.at(i), boxVector.at(i), n, boxDimensions2.x, dt);
 		}
 
 		if (boxVertex.at(i).z <= boxDimensions1.z) // BEHIND
 		{
-			//tmpContactPoints.push_back(boxVertex.at(i));
+			rb->rollbackState();
 			n = glm::normalize(glm::vec3(0, 0, -1));
+
+			CollisionTimeZ(rb, boxVertex.at(i), boxVector.at(i), n, boxDimensions1.z, dt);
 		}
 		if (boxVertex.at(i).z >= boxDimensions2.z) // FRONT
 		{
-			//tmpContactPoints.push_back(boxVertex.at(i));
+			rb->rollbackState();
 			n = glm::normalize(glm::vec3(0, 0, -1));
+
+			CollisionTimeZ(rb, boxVertex.at(i), boxVector.at(i), n, boxDimensions2.z, dt);
 		}
 	}
 }
