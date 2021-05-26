@@ -286,8 +286,8 @@ void GUI() {
 			
 			if (isCollision)
 			{
-				ImGui::DragFloat("Tolerance", &tolerance, 0.1f);
-				ImGui::DragFloat("Elasticity", &coef_elasticity, 0.1f);
+				ImGui::DragFloat("Tolerance", &tolerance, 0.01f,0.f, 2.f);
+				ImGui::DragFloat("Elasticity", &coef_elasticity, 0.1f, 0.f,1.f);
 			}
 
 			ImGui::TreePop();
