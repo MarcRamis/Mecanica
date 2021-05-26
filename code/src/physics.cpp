@@ -24,7 +24,7 @@ extern bool renderCube;
 Box* box;
 SIEuler solver;
 
-glm::vec3 gravity = glm::vec3(0.f, 9.f,0.f);
+glm::vec3 gravity = glm::vec3(0.f, -9.81f,0.f);
 glm::vec3 torque = glm::vec3(1.f, 1.f, 1.f);
 
 bool isSimulation = false;
@@ -45,8 +45,10 @@ bool once = false;
 // For Randoms
 glm::vec3 randomRotation = glm::vec3(180.f,180.f,180.);
 glm::vec3 randomImpulse = glm::vec3(30.f,30.f,30.f);
-glm::vec3 randomForceTorque = glm::vec3(10.f,10.f,10.f);
 glm::vec3 randomImpulseRotation = glm::vec3(10.f,10.f,10.f);
+
+float tolerance = 0.1f;
+float coef_elasticity = 0.5f;
 
 #pragma endregion
 
@@ -91,17 +93,23 @@ glm::vec3 getRandomTorqueAtPoint()
 }
 #pragma endregion
 
-void ResetSimulation()
+void InitSimulation()
 {
 	delete box;
 
 	box = new Box(box_w, box_h, box_d, 1.f);
 
+	//box->initializeState(
+	//	getRandomPositionInsideBox(),
+	//	getRotationQuaternion(getRandomInitialRotation(), 3.14f / 2.f),
+	//	getRandomInitialImpulse(),
+	//	getRandomInitialImpulse());
+
 	box->initializeState(
-		getRandomPositionInsideBox(),
-		getRotationQuaternion(getRandomInitialRotation(), 3.14f / 2.f),
-		getRandomInitialImpulse(),
-		getRandomInitialImpulse());
+		glm::vec3(0.f,5.f,0.f),
+		getRotationQuaternion(glm::vec3(0.f), 3.14f / 2.f),
+		glm::vec3(0.f),
+		glm::vec3(0.f));
 
 	torques = getRandomTorqueAtPoint();
 }
@@ -119,7 +127,7 @@ void Timer()
 	elapsedsec = diff / CLOCKS_PER_SEC;
 	if (elapsedsec >= sec)
 	{
-		ResetSimulation();
+		InitSimulation();
 		elapsedsec = 0.0f;
 		start = clock();
 	}
@@ -127,57 +135,129 @@ void Timer()
 
 	#pragma region Collisions
 
-void CollisionBoxWalls(glm::vec3& com, glm::quat& rot, float width, float height, float depth,
-	glm::vec3 boxDimensions1, glm::vec3 boxDimensions2)
+void ImpulseCorrection(RigidBody* rb, glm::vec3 contactPoint, glm::vec3 normal, float dt)
 {
-	// 6 WALLS - 6 FACES
-	// 6 FACES OF THE BOX
-	std::vector<float> boxFaces =
-	{ com.x + width / 2, com.x - width / 2,
-	com.y + height / 2, com.y - height / 2,
-	com.z + depth / 2, com.z - depth / 2 };
-
-	std::vector<float> wallFaces
+	glm::vec3 velL = rb->state.linearMomentum / rb->getMass();
+	glm::vec3 velA = glm::inverse(rb->getInertiaTensor()) * rb->state.angularMomentum;
+	
+	// Response velocity
+	glm::vec3 pA_der = velL + glm::cross(velA, (contactPoint - rb->getState().com));
+	glm::vec3 pB_der = glm::vec3(0.f); // pongo 0 porque b es el plano
+	float vRel = glm::dot(normal, (pA_der - pB_der));
+	
+	// Impulse
+	if (vRel < 0)
 	{
-		boxDimensions1.x, boxDimensions1.y, boxDimensions1.z,
-		boxDimensions2.x, boxDimensions2.y, boxDimensions2.z
-	};
+		float j = (-(1 + coef_elasticity) * vRel) /
+			((1.f / rb->getMass()) + glm::dot(normal, (rb->getInertiaTensor() * glm::cross(glm::cross(contactPoint, normal), contactPoint))));
 
-	// BUT I DONT WANT FACES I WANT VERTEXS
+		/*glm::vec3 j  = (-(1 + coef_elasticity) * vRel) /
+			((1.f / rb->getMass()) + normal * (rb->getInertiaTensor() * glm::cross(glm::cross(contactPoint, normal), contactPoint))));*/
+		
+		glm::vec3 impulse = j * normal;
+		glm::vec3 impulseTorque = glm::cross((contactPoint - rb->getState().com), impulse);
+		
+		rb->state.linearMomentum = rb->state.linearMomentum + impulse;
+		rb->state.angularMomentum = rb->state.angularMomentum + impulseTorque;
+	}
+}
+
+void CollisionTime(RigidBody *rb, glm::vec3 contactPoints, glm::vec3 boxVector, glm::vec3 normal, float boxSide, float dt)
+{
+	float newTime = dt;
+	glm::vec3 velL = rb->state.linearMomentum / rb->getMass();
+
+	glm::vec3 tmpPosition;
+	
+	// Back in time
+	for (int i = 0; i < 3; i++)
+	{
+		tmpPosition = (rb->getState().com + boxVector) + newTime * velL;	// CALCULATE NEW TMP POSITION WITH CORRECT TIME IN CORRECT POSITION
+		
+		if (tmpPosition.y < boxSide + tolerance)
+		{
+			newTime = newTime * 0.5f;
+		}
+		else if (tmpPosition.y > boxSide - tolerance)
+		{
+			newTime = newTime * 1.5f;
+		}
+	}
+
+	ImpulseCorrection(rb, tmpPosition, normal, newTime);
+}
+
+void CollisionBoxWalls(RigidBody *rb, float width, float height, float depth,
+	glm::vec3 boxDimensions1, glm::vec3 boxDimensions2, float dt)
+{
+	// 8 box vertex
 	std::vector<glm::vec3> boxVertex =
 	{
-		glm::mat3_cast(rot) * glm::vec3((width / 2.f), (height / 2.f), (depth / 2.f)) + com,
-		glm::mat3_cast(rot) * glm::vec3((width / 2.f), (-height / 2.f), (depth / 2.f)) + com,
-		glm::mat3_cast(rot) * glm::vec3((width / 2.f), (height / 2.f), (-depth / 2.f)) + com,
-		glm::mat3_cast(rot) * glm::vec3((width / 2.f), (-height / 2.f), (-depth / 2.f)) + com,
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((width / 2.f), (height / 2.f), (depth / 2.f)) + rb->getState().com,
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((width / 2.f), (-height / 2.f), (depth / 2.f)) + rb->getState().com,
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((width / 2.f), (height / 2.f), (-depth / 2.f)) + rb->getState().com,
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((width / 2.f), (-height / 2.f), (-depth / 2.f)) + rb->getState().com,
 
-		glm::mat3_cast(rot) * glm::vec3((-width / 2.f), (-height / 2.f), (-depth / 2.f)) + com,
-		glm::mat3_cast(rot) * glm::vec3((-width / 2.f), (-height / 2.f), (depth / 2.f)) + com,
-		glm::mat3_cast(rot) * glm::vec3((-width / 2.f), (height / 2.f), (depth / 2.f)) + com,
-		glm::mat3_cast(rot) * glm::vec3((-width / 2.f), (height / 2.f), (-depth / 2.f)) + com,
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((-width / 2.f), (-height / 2.f), (-depth / 2.f)) + rb->getState().com,
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((-width / 2.f), (-height / 2.f), (depth / 2.f)) + rb->getState().com,
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((-width / 2.f), (height / 2.f), (depth / 2.f)) + rb->getState().com,
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((-width / 2.f), (height / 2.f), (-depth / 2.f)) + rb->getState().com,
 	};
 
-	std::vector<glm::vec3> tmp;
+	std::vector<glm::vec3> boxVector =
+	{
+		glm::mat3_cast(rb->getState().rotation) * glm::vec3((width / 2.f), (height / 2.f), (depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation)* glm::vec3((width / 2.f), (-height / 2.f), (depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) *glm::vec3((width / 2.f), (height / 2.f), (-depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) *glm::vec3((width / 2.f), (-height / 2.f), (-depth / 2.f)),
+
+		glm::mat3_cast(rb->getState().rotation) *glm::vec3((-width / 2.f), (-height / 2.f), (-depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) *glm::vec3((-width / 2.f), (-height / 2.f), (depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) *glm::vec3((-width / 2.f), (height / 2.f), (depth / 2.f)),
+		glm::mat3_cast(rb->getState().rotation) *glm::vec3((-width / 2.f), (height / 2.f), (-depth / 2.f))
+	};
+	
+	//std::vector<glm::vec3> tmpContactPoints;
+	glm::vec3 n;
 
 	for (int i = 0; i < boxVertex.size(); i++)
 	{
-		if (boxVertex.at(i).y < boxDimensions1.y)
+		if (boxVertex.at(i).y <= boxDimensions1.y) // DOWN
 		{
-			std::cout << i << "collision down" << std::endl;
-			tmp.push_back(boxVertex.at(i));
-			// REBOTE
+			//tmpContactPoints.push_back(boxVertex.at(i));
+			n = glm::normalize(glm::vec3(0, 1, 0));
+			
+			rb->rollbackState();
+			
+			CollisionTime(rb, boxVertex.at(i), boxVector.at(i), n, boxDimensions1.y, dt);
 		}
-		if (boxVertex.at(i).y > boxDimensions2.y)
+		if (boxVertex.at(i).y >= boxDimensions2.y) // UP
 		{
-			std::cout << i << "collision up" << std::endl;
-			tmp.push_back(boxVertex.at(i));
-		}
-		
-		if (boxVertex.at(i).x < boxDimensions2.x)
-		{
-			std::cout << i << "collision left" << std::endl;
+		//	tmpContactPoints.push_back(boxVertex.at(i));
+			n = glm::normalize(glm::vec3(0, -1, 0));
 		}
 		
+		if (boxVertex.at(i).x <= boxDimensions1.x) // LEFT
+		{
+			//tmpContactPoints.push_back(boxVertex.at(i));
+			n = glm::normalize(glm::vec3(-1, 0, 0));
+		}
+		if (boxVertex.at(i).x >= boxDimensions2.x) // RIGHT
+		{
+			//tmpContactPoints.push_back(boxVertex.at(i));
+			n = glm::normalize(glm::vec3(-1, 0, 0));
+		}
+
+		if (boxVertex.at(i).z <= boxDimensions1.z) // BEHIND
+		{
+			//tmpContactPoints.push_back(boxVertex.at(i));
+			n = glm::normalize(glm::vec3(0, 0, -1));
+		}
+		if (boxVertex.at(i).z >= boxDimensions2.z) // FRONT
+		{
+			//tmpContactPoints.push_back(boxVertex.at(i));
+			n = glm::normalize(glm::vec3(0, 0, -1));
+		}
 	}
 }
 
@@ -195,29 +275,18 @@ void GUI() {
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);//FrameRate
 		
 		ImGui::Checkbox("Play Simulation", &isSimulation);
-		ImGui::DragFloat("Timer", &sec, 0.1f);
+		ImGui::DragFloat("Time", &sec, 0.1f);
 
-		if (ImGui::TreeNode("Force"))
-		{
-			ImGui::DragFloat3("Gravity", glm::value_ptr(gravity), 0.1f);
-
-			ImGui::TreePop();
-		}
-		if (ImGui::TreeNode("Randoms"))
-		{
-			ImGui::DragFloat3("Rotation", glm::value_ptr(randomRotation), 0.1f);
-			ImGui::DragFloat3("Impulse", glm::value_ptr(randomImpulse), 0.1f);
-
-			ImGui::TreePop();
-		}
+		ImGui::DragFloat3("Gravity", glm::value_ptr(gravity), 0.1f);
 		
 		if (ImGui::TreeNode("Collisions"))
 		{
-			ImGui::Checkbox("Play Simulation", &isCollision);
+			ImGui::Checkbox("Use Walls", &isCollision);
 			
 			if (isCollision)
 			{
-
+				ImGui::DragFloat("Tolerance", &tolerance, 0.1f);
+				ImGui::DragFloat("Elasticity", &coef_elasticity, 0.1f);
 			}
 
 			ImGui::TreePop();
@@ -235,37 +304,26 @@ void PhysicsInit() {
 
 	srand(time(nullptr));
 
-	box = new Box(box_w,box_h,box_d,1.f);
-	
-	box->initializeState(
-		getRandomPositionInsideBox(),
-		getRotationQuaternion(getRandomInitialRotation(), 3.14f / 2.f),
-		getRandomInitialImpulse(),
-		getRandomInitialImpulse());
+	InitSimulation();
 	
 	renderCube = true;
-
-	//torques = glm::cross(forceTorque, torque);
-	torques = getRandomTorqueAtPoint();
 }
 
 void PhysicsUpdate(float dt) {
 	
-	forces = glm::vec3(gravity);
-	//forces = glm::vec3(0.f);
-
-	torques = glm::vec3(0.f);
-
 	if (isSimulation)
 	{
 		Timer();
 
-		solver.Update(box, forces, torques, dt);
+		forces = glm::vec3(gravity);
+		torques = glm::vec3(0.f);
 
+		solver.Update(box, forces, torques, dt);
+		
 		if (isCollision)
 		{
-			CollisionBoxWalls(box->getState().com, box->getState().rotation,box_w,box_h,box_h, // box properties
-				glm::vec3(-5,0,-5), glm::vec3(5,10,5)); // wall properites
+			CollisionBoxWalls(box,box_w,box_h,box_h,glm::vec3(-5,0,-5), glm::vec3(5,10,5), dt);
+			box->commitState();
 		}
 	}
 	
