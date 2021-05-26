@@ -42,9 +42,9 @@ float sec = 15.;
 bool once = false;
 
 // For Randoms
-glm::vec3 randomRotation = glm::vec3(180.f,180.f,180.);
-glm::vec3 randomImpulse = glm::vec3(30.f,30.f,30.f);
-glm::vec3 randomImpulseRotation = glm::vec3(10.f,10.f,10.f);
+glm::vec3 randomRotation = glm::vec3(45.f, 45.f, 45.f);
+glm::vec3 randomImpulse = glm::vec3(10.f, 10.f, 10.f);
+glm::vec3 randomImpulseRotation = glm::vec3(5.f, 5.f, 5.f);
 bool useRandom = true;
 
 float tolerance = 0.1f;
