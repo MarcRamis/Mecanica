@@ -12,7 +12,6 @@ namespace Cube {
 RigidBody::RigidBody(float mass) : mass(mass) {};
 
 void RigidBody::initializeState(glm::vec3 initialPosition, glm::quat initialRotation, glm::vec3 linearSpeed, glm::vec3 angularSpeed) {
-	// Initialize the state outside the constructor to use the virtual method getInitialInertiaTensor
 	initialInertiaTensor = getInitialInertiaTensor();
 	
 	state = {
@@ -32,16 +31,12 @@ void RigidBody::setState(RigidBody::State newState) {
 }
 
 RigidBody::State RigidBody::rollbackState() {
-	// If the state is inconsistent, we can go back to the last correct state
-	// (for example due to a collision)
-	// Return the inconsistent state for cases where we want to use it
 	State tmp = state;
 	state = stableState;
 	return tmp;
 }
 
 void RigidBody::commitState() {
-	// Convert the state into a stable (correct) state
 	stableState = state;
 }
 
@@ -73,7 +68,6 @@ void Box::draw() {
 }
 
 glm::mat3 Box::getInitialInertiaTensor() {
-	// TODO implement
 	return glm::mat3(
 		(1.f / 12.f) * getMass() * (powf(height,2) + powf(depth, 2)), 0.f, 0.f, 
 		0.f, (1.f / 12.f) * getMass() * (powf(width, 2) + powf(depth, 2)), 0.f,

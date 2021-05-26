@@ -147,7 +147,7 @@ void ImpulseCorrection(RigidBody* rb, glm::vec3 contactPoint, glm::vec3 normal, 
 	
 	// Response velocity
 	glm::vec3 pA_der = velL + glm::cross(velA, (contactPoint - rb->getState().com));
-	glm::vec3 pB_der = glm::vec3(0.f); // pongo 0 porque b es el plano
+	glm::vec3 pB_der = glm::vec3(0.f); 
 	float vRel = glm::dot(normal, (pA_der - pB_der));
 	
 	// Impulse
@@ -188,7 +188,6 @@ void CollisionTime(RigidBody *rb, glm::vec3 contactPoints, glm::vec3 normal, flo
 
 	ImpulseCorrection(rb, tmpPosition, normal, newTime);
 }
-
 void CollisionBoxWalls(RigidBody *rb, float width, float height, float depth,
 	glm::vec3 boxDimensions1, glm::vec3 boxDimensions2, float dt)
 {
