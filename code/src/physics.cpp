@@ -4,16 +4,14 @@
 #include <glm/glm.hpp>
 
 #include <ctime>
+#include <iostream>
+
+#include "Fluids.h"
 
 #pragma region Forward Declarations
 
 extern bool renderCloth;
-
-namespace ClothMesh {
-	extern void updateClothMesh(float* array_data);
-	extern const int numCols;
-	extern const int numRows;
-}
+extern bool renderSphere;
 
 namespace Sphere {
 	extern void updateSphere(glm::vec3 pos, float radius);
@@ -22,6 +20,10 @@ namespace Sphere {
 #pragma endregion
 
 #pragma region Variables
+
+Fluids* fluids;
+const int MESH_WIDTH = { 2 };
+const int MESH_HEIGHT = { 2 };
 
 bool activateSimulation = true;
 
@@ -79,6 +81,14 @@ void GUI() {
 #pragma region Phyisics Loop
 
 void PhysicsInit() {
+
+	//srand(time(nullptr));
+	
+	fluids = new Fluids(ClothMesh::numCols, ClothMesh::numRows);
+	
+	// Render prims
+	renderSphere = false;
+	renderCloth = true;
 }
 
 void PhysicsUpdate(float dt) {
@@ -87,6 +97,8 @@ void PhysicsUpdate(float dt) {
 	{
 		Timer();
 	}
+
+	fluids->Draw();
 }
 
 void PhysicsCleanup() {
