@@ -31,7 +31,7 @@ void Fluids::GerstnerWaves(float dt, std::vector<Wave> wave)
 	for (int i = 0; i < maxParticles; i++)
 	{
 		pos[i] = initialPos[i] - (get_wave(initialPos[i], wave[0], totalTimeExecution) + get_wave(initialPos[i], wave[1], totalTimeExecution) + get_wave(initialPos[i], wave[2], totalTimeExecution));
-		pos[i].y = get_wave_y(initialPos[i], wave[0], totalTimeExecution) + get_wave_y(initialPos[i], wave[1], totalTimeExecution) + get_wave_y(initialPos[i], wave[2], totalTimeExecution);
+		pos[i].y = initialPos[i].y + get_wave_y(initialPos[i], wave[0], totalTimeExecution) + get_wave_y(initialPos[i], wave[1], totalTimeExecution) + get_wave_y(initialPos[i], wave[2], totalTimeExecution);
 	}
 }
 

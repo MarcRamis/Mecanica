@@ -32,7 +32,7 @@ bool activateSimulation = false;
 // Forces
 glm::vec3 gravity = glm::vec3(0.f,-9.81f,0.f);
 glm::vec3 normY = glm::vec3(0.f,1.f,0.f);
-float massSphere = 10.f;
+float massSphere = 100.f;
 float radius = 1.f;
 
 // Timer
