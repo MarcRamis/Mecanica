@@ -32,7 +32,8 @@ bool activateSimulation = false;
 // Forces
 glm::vec3 gravity = glm::vec3(0.f,-9.81f,0.f);
 glm::vec3 normY = glm::vec3(0.f,1.f,0.f);
-float massSphere = 20.f;
+float massSphere = 10.f;
+float radius = 1.f;
 
 // Timer
 clock_t start, diff;
@@ -40,10 +41,11 @@ float elapsedsec = 0.0f;
 float sec = 15.f;
 bool once = false;
 
+float linkDistance = 0.5f;
 std::vector<Wave> waves = {
-	Wave(glm::vec3(1.0f,0.f,0.f),0.8f,0.5f,3.f),
-	Wave(glm::vec3(0.0f,0.f,-1.f),0.8f,0.5f,3.f),
-	Wave(glm::vec3(1.0f,0.f,1.f),0.8f,0.5f,3.f)
+	Wave(glm::vec3(1.0f,0.f,0.f),1.f,0.5f,1.f),
+	Wave(glm::vec3(0.0f,0.f,-1.f),0.2f,0.5f,2.f),
+	Wave(glm::vec3(1.0f,0.f,1.f),0.5f,0.5f,5.f)
 };
 
 #pragma endregion
@@ -53,8 +55,8 @@ std::vector<Wave> waves = {
 void ResetFluids()
 {
 	fluids.Reset();
-	fluids = Fluids(ClothMesh::numCols, ClothMesh::numRows);
-	sphere = Ball(glm::vec3(0.f, 5.f, 0.f), glm::vec3(0.f, 0.f, 0.f), 1.f, massSphere);
+	fluids = Fluids(ClothMesh::numCols, ClothMesh::numRows, linkDistance);
+	sphere = Ball(glm::vec3(0.f, 5.f, 0.f), glm::vec3(0.f, 0.f, 0.f), radius, massSphere);
 }
 
 void Timer()
@@ -77,16 +79,27 @@ void Timer()
 	}
 }
 
-glm::vec3 getBuoyancyForce(glm::vec3 pos, glm::vec3 gravity, glm::vec3 normY)
+glm::vec3 getBuoyancyForce(Fluids fluids, Ball s, glm::vec3 gravity, glm::vec3 n, float density)
 {
-	return glm::vec3(0.f);
+	for (int i = 0; i < fluids.GetMaxParticles(); i++)
+	{
+		if (s.pos.x - s.radius < fluids.pos[i].x && s.pos.x + s.radius < fluids.pos[i].x
+			&& s.pos.y - s.radius < fluids.pos[i].y && s.pos.y + s.radius < fluids.pos[i].y
+			&& s.pos.z - s.radius < fluids.pos[i].z && s.pos.z + s.radius < fluids.pos[i].z)
+		{
+			float heightSubmerged = (glm::length( (s.pos.y - s.radius) - fluids.pos[i].y));
+			s.heightSubmerged = heightSubmerged;
+		}
+	}
+
+	return density * gravity * s.volume_spherical_cap(s.heightSubmerged) * n;
 }
 
 #pragma endregion
 
 #pragma region ImGui
 
-bool show_test_window = true;
+bool show_test_window = false;
 void GUI() {
 	bool show = true;
 	ImGui::Begin("Physics Parameters", &show, 0);
@@ -95,6 +108,14 @@ void GUI() {
 
 		ImGui::Checkbox("Activate Simulation", &activateSimulation);
 		ImGui::DragFloat("Timer", &sec, 0.1f);
+
+		ImGui::Checkbox("Show Particles", &renderParticles); ImGui::SameLine();
+		ImGui::Checkbox("Show Cloth", &renderCloth);
+	
+		ImGui::DragFloat("Distance Between Particles", &linkDistance, 0.1f);
+
+		ImGui::DragFloat3("Gravity", glm::value_ptr(gravity));
+		ImGui::DragFloat("Sphere mass", &massSphere, 0.1f);
 
 		if (ImGui::TreeNode("Waves"))
 		{
@@ -129,7 +150,6 @@ void GUI() {
 			ImGui::TreePop();
 		}
 
-		ImGui::DragFloat3("Gravity", glm::value_ptr(gravity));
 	}
 	
 	if (show_test_window){
@@ -144,21 +164,19 @@ void GUI() {
 #pragma region Phyisics Loop
 
 void PhysicsInit() {
-
-	//srand(time(nullptr));
 	
 	// Init Fluids & Particles
-	fluids = Fluids(ClothMesh::numCols, ClothMesh::numRows);
+	fluids = Fluids(ClothMesh::numCols, ClothMesh::numRows, linkDistance);
 	LilSpheres::particleCount = fluids.width * fluids.height;
 	ps = ParticleSystem(LilSpheres::particleCount);
 	
 	// Init Sphere
-	sphere = Ball(glm::vec3(0.f,5.f,0.f), glm::vec3(0.f,0.f,0.f),1.f, massSphere);
+	sphere = Ball(glm::vec3(0.f,5.f,0.f), glm::vec3(0.f,0.f,0.f), radius, massSphere);
 
 	// Render prims
 	renderSphere = true;
 	renderCloth = true;
-	renderParticles = true;
+	renderParticles = false;
 }
 
 void PhysicsUpdate(float dt) {
@@ -169,8 +187,9 @@ void PhysicsUpdate(float dt) {
 		
 		fluids.GerstnerWaves(dt, waves);
 
-		glm::vec3 forces = /*getBuoyancyForce()*/ + gravity;
-		solver.UpdateSphere(sphere, gravity,dt);
+		glm::vec3 forces = gravity + getBuoyancyForce(fluids, sphere, gravity, normY, 0.997f);
+		
+		solver.UpdateSphere(sphere, forces,dt);
 	}
 
 	fluids.Draw();

@@ -35,7 +35,7 @@ public:
 	float width, height;
 
 	Fluids();
-	Fluids(int w, int h);
+	Fluids(int w, int h, float linkDistance);
 	void Draw();
 
 	void GerstnerWaves(float dt, std::vector<Wave> wave);

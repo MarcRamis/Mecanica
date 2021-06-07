@@ -2,9 +2,8 @@
 
 Fluids::Fluids() {}
 
-Fluids::Fluids(int w, int h) : width(w), height(h), ParticleSystem(w* h)
-{	
-	float linkDistance = 0.5f;
+Fluids::Fluids(int w, int h, float linkDistance) : width(w), height(h), ParticleSystem(w* h)
+{
 
 	for (int row = 0; row < h; row++)
 	{
