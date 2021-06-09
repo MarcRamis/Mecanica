@@ -83,9 +83,7 @@ glm::vec3 getBuoyancyForce(Fluids fluids, Ball s, glm::vec3 gravity, glm::vec3 n
 {
 	for (int i = 0; i < fluids.GetMaxParticles(); i++)
 	{
-		if (s.pos.x - s.radius < fluids.pos[i].x && s.pos.x + s.radius < fluids.pos[i].x
-			&& s.pos.y - s.radius < fluids.pos[i].y && s.pos.y + s.radius < fluids.pos[i].y
-			&& s.pos.z - s.radius < fluids.pos[i].z && s.pos.z + s.radius < fluids.pos[i].z)
+		if (s.pos.y - s.radius < fluids.pos[i].y)
 		{
 			float heightSubmerged = (glm::length( (s.pos.y - s.radius) - fluids.pos[i].y));
 			s.heightSubmerged = heightSubmerged;
